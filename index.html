@@ -450,6 +450,7 @@
             const { data, error } = await supabaseClient
                 .from('atividades')
                 .select('*')
+                .eq('visivel', true)
                 .order('id', { ascending: false });
 
             if (error) {
@@ -732,8 +733,8 @@
 
             const { error } = await supabaseClient
                 .from('atividades')
-                .delete()
-                .gt('id', 0);
+                .update({ visivel: false })
+                .eq('visivel', true);
 
             if (error) {
                 alert('Erro ao apagar no Supabase: ' + error.message);
