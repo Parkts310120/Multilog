@@ -372,6 +372,10 @@
                 <div class="history-title">Histórico Admin</div>
                 <button class="clear-btn" id="btn-clear" onclick="clearHistory()" style="display: none;">Limpar Tudo</button>
             </div>
+            <div id="admin-reports" style="margin-bottom:20px;"></div>
+            <div style="margin-bottom:12px;">
+                <button class="btn-primary" onclick="exportCSV()">📥 Exportar CSV</button>
+            </div>
             <div id="history-container"></div>
         </div>
 
@@ -460,9 +464,11 @@
                 name: item.atividade,
                 start: formatDateTime(new Date(item.inicio)),
                 end: formatDateTime(new Date(item.fim)),
-                duration: item.duracao
+                duration: item.duracao,
+                duracao_segundos: item.duracao_segundos || 0
             }));
 
+            renderActivities();
             renderActivities();
         }
 
@@ -581,6 +587,81 @@
             }
         }
 
+        function formatSeconds(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+
+            return `${hrs}h ${mins}min ${secs}s`;
+        }
+
+        function renderReports() {
+            const reportsDiv = document.getElementById('admin-reports');
+
+            let totalSegundos = 0;
+            const usuarios = {};
+            const depositantes = {};
+
+            globalActivities.forEach(act => {
+                const seg = act.duracao_segundos || 0;
+
+                totalSegundos += seg;
+
+                usuarios[act.user] = (usuarios[act.user] || 0) + seg;
+                depositantes[act.depositor] = (depositantes[act.depositor] || 0) + seg;
+            });
+
+            let usuariosHTML = '';
+            Object.entries(usuarios)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([nome, seg]) => {
+                    usuariosHTML += `
+                        <div class="time-row">
+                            <div style="font-weight:bold;">👤 ${nome}</div>
+                            <div style="margin-left:auto;">${formatSeconds(seg)}</div>
+                        </div>
+                    `;
+                });
+
+            let depositantesHTML = '';
+            Object.entries(depositantes)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([nome, seg]) => {
+                    depositantesHTML += `
+                        <div class="time-row">
+                            <div style="font-weight:bold;">📦 ${nome}</div>
+                            <div style="margin-left:auto;">${formatSeconds(seg)}</div>
+                        </div>
+                    `;
+                });
+
+            reportsDiv.innerHTML = `
+                <div class="card">
+                    <h3 style="margin-top:0;">📊 Relatórios</h3>
+
+                    <div class="time-row">
+                        <div style="font-weight:bold;">Total de atividades</div>
+                        <div style="margin-left:auto;">${globalActivities.length}</div>
+                    </div>
+
+                    <div class="time-row" style="margin-bottom:16px;">
+                        <div style="font-weight:bold;">Tempo total</div>
+                        <div style="margin-left:auto;">${formatSeconds(totalSegundos)}</div>
+                    </div>
+
+                    <hr style="margin:16px 0; border-color:#334155;">
+
+                    <h4>🏆 Ranking por Usuário</h4>
+                    ${usuariosHTML}
+
+                    <hr style="margin:16px 0; border-color:#334155;">
+
+                    <h4>📦 Ranking por Depositante</h4>
+                    ${depositantesHTML}
+                </div>
+            `;
+        }
+        
         function renderActivities() {
             const container = document.getElementById('history-container');
             const clearBtn = document.getElementById('btn-clear');
@@ -619,6 +700,21 @@
                 globalActivities = globalActivities.filter(act => act.id !== id);
                 renderActivities();
             }
+        }
+
+        function exportCSV() {
+            let csv = 'Usuario,Depositante,Atividade,Inicio,Fim,Duracao\n';
+
+            globalActivities.forEach(act => {
+                csv += `"${act.user}","${act.depositor}","${act.name}","${act.start}","${act.end}","${act.duration}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'relatorio_atividades.csv';
+            link.click();
         }
 
         function clearHistory() {
