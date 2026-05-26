@@ -695,12 +695,22 @@
                 container.appendChild(div);
             });
         }
-
-        function deleteSingleItem(id) {
-            if (confirm('Deseja remover este registro específico da lista?')) {
-                globalActivities = globalActivities.filter(act => act.id !== id);
-                renderActivities();
+        async function deleteSingleItem(id) {
+            if (!confirm('Deseja ocultar este registro do histórico? Ele continuará salvo no banco.')) {
+                return;
             }
+
+            const { error } = await supabaseClient
+                .from('atividades')
+                .update({ visivel: false })
+                .eq('id', id);
+
+            if (error) {
+                alert('Erro ao ocultar registro: ' + error.message);
+                return;
+            }
+
+            await loadActivitiesFromSupabase();
         }
 
         function exportCSV() {
@@ -719,7 +729,7 @@
         }
 
         async function clearHistory() {
-            const inputPass = prompt('Apenas administradores podem apagar o histórico.\nDigite a senha master para confirmar:');
+            const inputPass = prompt('Apenas administradores podem ocultar o histórico.\nDigite a senha master para confirmar:');
             if (inputPass === null) return;
 
             if (inputPass !== CONF_PASS) {
@@ -727,7 +737,7 @@
                 return;
             }
 
-            if (!confirm('Senha correta! Tem certeza absoluta que deseja apagar TODO o histórico do banco de dados?')) {
+            if (!confirm('Senha correta! Deseja ocultar todo o histórico da tela? Os dados continuarão salvos no banco.')) {
                 return;
             }
 
@@ -737,14 +747,15 @@
                 .eq('visivel', true);
 
             if (error) {
-                alert('Erro ao apagar no Supabase: ' + error.message);
+                alert('Erro ao ocultar histórico: ' + error.message);
                 return;
             }
 
             await loadActivitiesFromSupabase();
 
-            alert('Histórico apagado do Supabase com sucesso!');
+            alert('Histórico ocultado da tela. Os dados continuam no Supabase.');
         }
+
     </script>
 </body>
 </html>
