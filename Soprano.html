@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreador de Atividades Pro</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --success: #22c55e;
+            --success-hover: #16a34a;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .status-panel {
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px dashed var(--border);
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-free { background-color: #334155; color: #cbd5e1; }
+        .status-running { background-color: #1e3a8a; color: #93c5fd; }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-start { background-color: var(--success); }
+        .btn-start:hover:not(:disabled) { background-color: var(--success-hover); }
+
+        .btn-end { background-color: var(--danger); }
+        .btn-end:hover:not(:disabled) { background-color: var(--danger-hover); }
+
+        .btn-primary { background-color: var(--primary); color: #0f172a; margin-bottom: 12px; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        .btn-test { background-color: #475569; color: #fff; font-size: 0.85rem; padding: 10px; width: 100%; }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .history-section { width: 100%; }
+
+        .history-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .activity-item {
+            background-color: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-right: 85px;
+        }
+
+        .activity-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        .badges-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+        }
+
+        .user-badge {
+            background-color: #334155;
+            color: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .depositor-badge {
+            background-color: #1e3a8a;
+            color: #93c5fd;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .time-row {
+            display: flex;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .time-label {
+            width: 60px;
+            font-weight: 600;
+        }
+
+        .duration-box {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn-delete-single {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            width: auto;
+            border-radius: 6px;
+        }
+        
+        .btn-delete-single:hover {
+            background-color: var(--danger);
+            color: #fff;
+        }
+
+        .clear-btn {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            width: auto;
+            border-radius: 6px;
+        }
+        
+        .clear-btn:hover { background-color: rgba(239, 68, 68, 0.1); }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 32px 16px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            text-align: center;
+            display: none;
+        }
+        
+        .logout-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="login-screen">
+        <h1>Acesso Restrito</h1>
+        <div class="subtitle">Faça login para gerenciar as atividades</div>
+        <div class="card">
+            <div class="input-group">
+                <label for="login-username">Usuário</label>
+                <input type="text" id="login-username" placeholder="Digite o usuário" value="admin">
+            </div>
+            <div class="input-group">
+                <label for="login-password">Senha</label>
+                <input type="password" id="login-password" placeholder="Digite a senha" value="123">
+            </div>
+            <button class="btn-primary" onclick="handleLogin()">🔓 Entrar</button>
+            <button class="btn-test" onclick="bypassLogin()">Direct Access (Entrar sem Senha)</button>
+            <div class="error-message" id="login-error">Usuário ou senha incorretos!</div>
+        </div>
+    </div>
+
+    <div class="container" id="app-screen" style="display: none;">
+        <h1>Rastreador de Atividades</h1>
+        <div class="subtitle">Controle de tempo em tempo real</div>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="user-name">Selecione o Executante</label>
+                <select id="user-name">
+                    <option value="Alex da Silva Sacavem (26331)">Alex da Silva Sacavem (26331)</option>
+                 
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="depositor-name">Selecione o Depositante</label>
+                <select id="depositor-name">
+                    <option value="Husqvarna">Husqvarna</option>
+                    <option value="Tecnoset">Tecnoset</option>
+                 
+                    <option value="Bosch">Bosch</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="activity-name">Selecione a Atividade</label>
+                <select id="activity-name">
+                    <option value="RETRABALHO HUSQVARNA">RETRABALHO HUSQVARNA</option>
+                    <option value="JOGAR ENTULHO NA CAÇAMBA">JOGAR ENTULHO NA CAÇAMBA</option>
+                </select>
+            </div>
+
+            <div class="status-panel">
+                <div id="status-container">
+                    <span class="status-badge status-free">Pronto para iniciar</span>
+                </div>
+                <div id="live-timer" style="font-size: 1.2rem; font-weight: bold; margin-top: 8px; color: var(--primary); display: none;">
+                    00:00:00
+                </div>
+            </div>
+
+            <div class="btn-grid">
+                <button id="btn-start" class="btn-start" onclick="startTracking()">⏱️ Iniciar</button>
+                <button id="btn-end" class="btn-end" onclick="stopTracking()" disabled>🛑 Finalizar</button>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header-flex">
+                <div class="history-title">Registros Concluídos</div>
+                <button class="clear-btn" id="btn-clear" onclick="clearHistory()" style="display: none;">Limpar Tudo</button>
+            </div>
+            <div id="history-container"></div>
+        </div>
+
+        <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
+    </div>
+
+    <script>
+        const CONF_USER = "admin";
+        const CONF_PASS = "123";
+
+        let currentSession = null;
+        let timerInterval = null;
+        let globalActivities = []; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showLoginScreen();
+        });
+
+        function handleLogin() {
+            const userIn = document.getElementById('login-username').value.trim();
+            const passIn = document.getElementById('login-password').value.trim();
+            const errorEl = document.getElementById('login-error');
+
+            if (userIn === CONF_USER && passIn === CONF_PASS) {
+                errorEl.style.display = 'none';
+                showAppScreen();
+            } else {
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function bypassLogin() {
+            showAppScreen();
+        }
+
+        function handleLogout() {
+            if(currentSession) {
+                alert('Finalize a atividade em andamento antes de sair!');
+                return;
+            }
+            showLoginScreen();
+        }
+
+        function showLoginScreen() {
+            document.getElementById('login-screen').style.display = 'block';
+            document.getElementById('app-screen').style.display = 'none';
+        }
+
+        function showAppScreen() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
+            initAppLogic();
+        }
+
+        function initAppLogic() {
+            document.getElementById('user-name').disabled = false;
+            document.getElementById('depositor-name').disabled = false;
+            document.getElementById('activity-name').disabled = false;
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-end').disabled = true;
+            
+            clearInterval(timerInterval);
+            updateStatusUI(false);
+            renderActivities();
+        }
+
+        function updateStatusUI(isRunning) {
+            const container = document.getElementById('status-container');
+            const timerEl = document.getElementById('live-timer');
+            if (isRunning) {
+                container.innerHTML = '<span class="status-badge status-running">Atividade em andamento...</span>';
+                timerEl.style.display = 'block';
+            } else {
+                container.innerHTML = '<span class="status-badge status-free">Pronto para iniciar</span>';
+                timerEl.style.display = 'none';
+            }
+        }
+
+        function startLiveTimerUpdate(startTime) {
+            const timerEl = document.getElementById('live-timer');
+            clearInterval(timerInterval);
+            
+            function update() {
+                const diff = new Date() - startTime;
+                const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                timerEl.innerText = `${hrs}:${mins}:${secs}`;
+            }
+            
+            update();
+            timerInterval = setInterval(update, 1000);
+        }
+
+        function startTracking() {
+            const user = document.getElementById('user-name').value;
+            const depositor = document.getElementById('depositor-name').value;
+            const name = document.getElementById('activity-name').value;
+            const startTime = new Date();
+
+            currentSession = { user, depositor, name, startTime: startTime.toISOString() };
+
+            document.getElementById('user-name').disabled = true;
+            document.getElementById('depositor-name').disabled = true;
+            document.getElementById('activity-name').disabled = true;
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-end').disabled = false;
+
+            startLiveTimerUpdate(startTime);
+            updateStatusUI(true);
+        }
+
+        function stopTracking() {
+            if (!currentSession) return;
+
+            clearInterval(timerInterval);
+            const endTime = new Date();
+            const startTime = new Date(currentSession.startTime);
+
+            const diffMs = endTime - startTime;
+            const diffMins = Math.round(diffMs / 60000);
+            let durationText = '';
+            
+            if (diffMins < 1) {
+                durationText = `${Math.round(diffMs / 1000)} segundos`;
+            } else if (diffMins < 60) {
+                durationText = `${diffMins} min`;
+            } else {
+                durationText = `${Math.floor(diffMins / 60)}h e ${diffMins % 60}min`;
+            }
+
+            const activityLog = {
+                id: Date.now(),
+                user: currentSession.user,
+                depositor: currentSession.depositor,
+                name: currentSession.name,
+                start: formatDateTime(startTime),
+                end: formatDateTime(endTime),
+                duration: durationText
+            };
+
+            globalActivities.unshift(activityLog);
+            currentSession = null;
+
+            document.getElementById('user-name').disabled = false;
+            document.getElementById('depositor-name').disabled = false;
+            document.getElementById('activity-name').disabled = false;
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-end').disabled = true;
+
+            updateStatusUI(false);
+            renderActivities();
+
+            alert(`✅ Atividade Concluída!\n\n⏱️ Tempo Total Utilizado: ${durationText}`);
+        }
+
+        function formatDateTime(dateObj) {
+            const date = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            const time = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            return `${date} às ${time}`;
+        }
+
+        function renderActivities() {
+            const container = document.getElementById('history-container');
+            const clearBtn = document.getElementById('btn-clear');
+            container.innerHTML = '';
+
+            if (globalActivities.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p style="margin:0;">Nenhuma atividade concluída ainda.</p></div>';
+                clearBtn.style.display = 'none';
+                return;
+            }
+
+            clearBtn.style.display = 'block';
+
+            globalActivities.forEach(act => {
+                const div = document.createElement('div');
+                div.className = 'activity-item';
+                div.innerHTML = `
+                    <button class="btn-delete-single" onclick="deleteSingleItem(${act.id})">❌ Apagar</button>
+                    <div class="activity-header">
+                        <div class="activity-name">${act.name}</div>
+                        <div class="badges-container">
+                            <div class="user-badge">👤 ${act.user.split(' ')[0]}</div>
+                            <div class="depositor-badge">📦 ${act.depositor}</div>
+                        </div>
+                    </div>
+                    <div class="time-row"><div class="time-label">Início:</div><div>${act.start}</div></div>
+                    <div class="time-row"><div class="time-label">Fim:</div><div>${act.end}</div></div>
+                    <div class="duration-box">⏱️ Tempo total: ${act.duration}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteSingleItem(id) {
+            if (confirm('Deseja remover este registro específico da lista?')) {
+                globalActivities = globalActivities.filter(act => act.id !== id);
+                renderActivities();
+            }
+        }
+
+        function clearHistory() {
+            const inputPass = prompt('Apenas administradores podem apagar o histórico.\nDigite a senha master para confirmar:');
+            if (inputPass === null) return;
+            
+            if (inputPass === CONF_PASS) {
+                if (confirm('Senha correta! Tem certeza absoluta que deseja apagar todo o histórico de registros?')) {
+                    globalActivities = [];
+                    renderActivities();
+                }
+            } else {
+                alert('Senha incorreta! Operação cancelada.');
+            }
+        }
+    </script>
+</body>
+</html>
