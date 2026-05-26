@@ -363,9 +363,13 @@
             </div>
         </div>
 
-        <div class="history-section">
+        <div style="margin-bottom: 24px;">
+            <button class="btn-primary" onclick="openAdminHistory()">🔐 Área Admin - Histórico</button>
+        </div>
+
+        <div class="history-section" id="admin-history-section" style="display: none;">
             <div class="history-header-flex">
-                <div class="history-title">Registros Concluídos</div>
+                <div class="history-title">Histórico Admin</div>
                 <button class="clear-btn" id="btn-clear" onclick="clearHistory()" style="display: none;">Limpar Tudo</button>
             </div>
             <div id="history-container"></div>
@@ -374,7 +378,11 @@
         <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const SUPABASE_URL = "https://pnoabqubkspbhluqdfwb.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const CONF_USER = "admin";
         const CONF_PASS = "123";
 
@@ -422,7 +430,7 @@
             initAppLogic();
         }
 
-        function initAppLogic() {
+        async function initAppLogic() {
             document.getElementById('user-name').disabled = false;
             document.getElementById('depositor-name').disabled = false;
             document.getElementById('activity-name').disabled = false;
@@ -431,6 +439,30 @@
             
             clearInterval(timerInterval);
             updateStatusUI(false);
+            await loadActivitiesFromSupabase();
+        }
+           
+        async function loadActivitiesFromSupabase() {
+            const { data, error } = await supabaseClient
+                .from('atividades')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) {
+                alert('Erro ao carregar atividades do Supabase: ' + error.message);
+                return;
+            }
+
+            globalActivities = data.map(item => ({
+                id: item.id,
+                user: item.usuario,
+                depositor: item.depositante,
+                name: item.atividade,
+                start: formatDateTime(new Date(item.inicio)),
+                end: formatDateTime(new Date(item.fim)),
+                duration: item.duracao
+            }));
+
             renderActivities();
         }
 
@@ -480,7 +512,7 @@
             updateStatusUI(true);
         }
 
-        function stopTracking() {
+        async function stopTracking() {
             if (!currentSession) return;
 
             clearInterval(timerInterval);
@@ -490,7 +522,7 @@
             const diffMs = endTime - startTime;
             const diffMins = Math.round(diffMs / 60000);
             let durationText = '';
-            
+
             if (diffMins < 1) {
                 durationText = `${Math.round(diffMs / 1000)} segundos`;
             } else if (diffMins < 60) {
@@ -499,17 +531,23 @@
                 durationText = `${Math.floor(diffMins / 60)}h e ${diffMins % 60}min`;
             }
 
-            const activityLog = {
-                id: Date.now(),
-                user: currentSession.user,
-                depositor: currentSession.depositor,
-                name: currentSession.name,
-                start: formatDateTime(startTime),
-                end: formatDateTime(endTime),
-                duration: durationText
-            };
+            const { error } = await supabaseClient
+                .from('atividades')
+                .insert({
+                    usuario: currentSession.user,
+                    depositante: currentSession.depositor,
+                    atividade: currentSession.name,
+                    inicio: startTime.toISOString(),
+                    fim: endTime.toISOString(),
+                    duracao: durationText,
+                    duracao_segundos: Math.round(diffMs / 1000)
+                });
 
-            globalActivities.unshift(activityLog);
+            if (error) {
+                alert('Erro ao salvar atividade no Supabase: ' + error.message);
+                return;
+            }
+
             currentSession = null;
 
             document.getElementById('user-name').disabled = false;
@@ -519,7 +557,7 @@
             document.getElementById('btn-end').disabled = true;
 
             updateStatusUI(false);
-            renderActivities();
+            await loadActivitiesFromSupabase();
 
             alert(`✅ Atividade Concluída!\n\n⏱️ Tempo Total Utilizado: ${durationText}`);
         }
@@ -528,6 +566,19 @@
             const date = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
             const time = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             return `${date} às ${time}`;
+        }
+
+        async function openAdminHistory() {
+            const inputPass = prompt('Digite a senha admin para acessar o histórico:');
+            if (inputPass === null) return;
+            if (inputPass !== CONF_PASS) {
+                alert('Senha incorreta!');
+                return;
+            }
+            document.getElementById('admin-history-section').style.display = 'block';
+            if (document.getElementById('admin-history-section').style.display !== 'none') {
+                await loadActivitiesFromSupabase();
+            }
         }
 
         function renderActivities() {
