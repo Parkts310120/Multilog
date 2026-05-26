@@ -733,16 +733,14 @@
             const { error } = await supabaseClient
                 .from('atividades')
                 .delete()
-                .neq('id', 0);
+                .gt('id', 0);
 
             if (error) {
                 alert('Erro ao apagar no Supabase: ' + error.message);
                 return;
             }
 
-            globalActivities = [];
-            renderReports();
-            renderActivities();
+            await loadActivitiesFromSupabase();
 
             alert('Histórico apagado do Supabase com sucesso!');
         }
