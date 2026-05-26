@@ -737,10 +737,6 @@
                 return;
             }
 
-            if (!confirm('Senha correta! Deseja ocultar todo o histórico da tela? Os dados continuarão salvos no banco.')) {
-                return;
-            }
-
             const { error } = await supabaseClient
                 .from('atividades')
                 .update({ visivel: false })
