@@ -717,18 +717,34 @@
             link.click();
         }
 
-        function clearHistory() {
+        async function clearHistory() {
             const inputPass = prompt('Apenas administradores podem apagar o histórico.\nDigite a senha master para confirmar:');
             if (inputPass === null) return;
-            
-            if (inputPass === CONF_PASS) {
-                if (confirm('Senha correta! Tem certeza absoluta que deseja apagar todo o histórico de registros?')) {
-                    globalActivities = [];
-                    renderActivities();
-                }
-            } else {
+
+            if (inputPass !== CONF_PASS) {
                 alert('Senha incorreta! Operação cancelada.');
+                return;
             }
+
+            if (!confirm('Senha correta! Tem certeza absoluta que deseja apagar TODO o histórico do banco de dados?')) {
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('atividades')
+                .delete()
+                .neq('id', 0);
+
+            if (error) {
+                alert('Erro ao apagar no Supabase: ' + error.message);
+                return;
+            }
+
+            globalActivities = [];
+            renderReports();
+            renderActivities();
+
+            alert('Histórico apagado do Supabase com sucesso!');
         }
     </script>
 </body>
