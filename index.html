@@ -58,8 +58,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
     <div class="card" id="tracking-card">
         <div class="input-group">
-            <label for="user-name">Selecione o Executante</label>
-            <select id="user-name"></select>
+            <label>Executante</label>
+            <input type="text" id="executante-logado" disabled>
         </div>
 
         <div class="input-group">
@@ -152,7 +152,7 @@ function showLoginScreen(){
 function showAppScreen(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-
+    document.getElementById('executante-logado').value = usuarioLogado.nome + ' (' + usuarioLogado.usuario + ')';
     const isAdmin=usuarioLogado&&usuarioLogado.tipo==='admin';
 
     if(isAdmin){
@@ -243,7 +243,7 @@ function startLiveTimerUpdate(startTime){
 }
 
 function startTracking(){
-    const user=document.getElementById('user-name').value;
+    const user=usuarioLogado.nome + ' (' + usuarioLogado.usuario + ')';
     const depositor=document.getElementById('depositor-name').value;
     const name=document.getElementById('activity-name').value;
     const startTime=new Date();
@@ -303,7 +303,6 @@ async function stopTracking(){
 
     currentSession=null;
 
-    document.getElementById('user-name').disabled=false;
     document.getElementById('depositor-name').disabled=false;
     document.getElementById('activity-name').disabled=false;
     document.getElementById('btn-start').disabled=false;
