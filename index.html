@@ -382,7 +382,11 @@
 
         <div class="card" id="admin-cadastros-section" style="display:none;">
             <h3 style="margin-top:0;">⚙️ Cadastros Admin</h3>
-
+            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
+                <h4 style="margin-top:0; color:#38bdf8;">👥 Usuários Cadastrados</h4>
+                <button class="btn-primary" onclick="listarUsuariosSistema()">Atualizar Lista de Usuários</button>
+                <div id="lista-usuarios-sistema"></div>
+            </div>
             <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
                 <h4 style="margin-top:0; color:#38bdf8;">📥 Cadastro em Massa de Funcionários</h4>
                 <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;">
@@ -483,6 +487,7 @@
             }
 
             document.getElementById('admin-cadastros-section').style.display = 'block';
+            listarUsuariosSistema();
         }
 
         async function handleLogin() {
@@ -1035,6 +1040,35 @@
 
             alert(`${usuarios.length} funcionários cadastrados/atualizados com sucesso!`);
         }
+
+        async function listarUsuariosSistema() {
+            const lista = document.getElementById('lista-usuarios-sistema');
+
+            const { data, error } = await supabaseClient
+                .from('usuarios_sistema')
+                .select('id, nome, usuario, tipo, ativo')
+                .order('nome');
+
+            if (error) {
+                alert('Erro ao carregar usuários: ' + error.message);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                lista.innerHTML = '<div class="empty-state">Nenhum usuário cadastrado.</div>';
+                return;
+            }
+
+            lista.innerHTML = data.map(u => `
+                <div class="activity-item" style="border-left-color:${u.tipo === 'admin' ? '#38bdf8' : '#22c55e'};">
+                    <div class="activity-name">${u.nome}</div>
+                    <div class="time-row"><div class="time-label">Login:</div><div>${u.usuario}</div></div>
+                    <div class="time-row"><div class="time-label">Tipo:</div><div>${u.tipo}</div></div>
+                    <div class="time-row"><div class="time-label">Status:</div><div>${u.ativo ? 'Ativo' : 'Inativo'}</div></div>
+                </div>
+            `).join('');
+        }
+
     </script>
 </body>
 </html>
