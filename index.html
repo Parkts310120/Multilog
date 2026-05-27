@@ -382,7 +382,14 @@
 
         <div class="card" id="admin-cadastros-section" style="display:none;">
             <h3 style="margin-top:0;">⚙️ Cadastros Admin</h3>
+            <div class="input-group">
+                <label>Cadastro em Massa de Funcionários</label>
+                <textarea id="usuarios-massa" placeholder="43094_AGRICIO BENICIO SAMPAIO FILHO&#10;44380_JOÃO PAULO MATOS PEREIRA FORTES" style="width:100%; min-height:160px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#0f172a; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
+            </div>
 
+            <button class="btn-primary" onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
+
+            <hr style="margin:20px 0; border-color:#334155;">
             <div class="input-group">
                 <label>Nome do Usuário</label>
                 <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
@@ -957,7 +964,67 @@
 
             alert('Usuário cadastrado com sucesso!');
         }
+        async function addUsuariosEmMassa() {
+            const texto = document.getElementById('usuarios-massa').value.trim();
 
+            if (!texto) {
+                alert('Cole a lista de usuários.');
+                return;
+            }
+
+            const linhas = texto.split(/\r?\n/);
+            const usuarios = [];
+            const linhasInvalidas = [];
+
+            linhas.forEach((linha, index) => {
+                const valor = linha.trim();
+
+                if (!valor) return;
+
+                const partes = valor.split('_');
+                const matricula = partes[0] ? partes[0].trim() : '';
+                const nome = partes.slice(1).join('_').trim();
+
+                if (!matricula || !nome) {
+                    linhasInvalidas.push(index + 1);
+                    return;
+                }
+
+                usuarios.push({
+                    nome: nome,
+                    usuario: matricula,
+                    senha: matricula,
+                    tipo: 'funcionario'
+                });
+            });
+
+            if (linhasInvalidas.length > 0) {
+                alert('Linhas inválidas: ' + linhasInvalidas.join(', '));
+                return;
+            }
+
+            if (usuarios.length === 0) {
+                alert('Nenhum usuário válido encontrado.');
+                return;
+            }
+
+            const confirmar = confirm(`Deseja cadastrar ${usuarios.length} funcionários?`);
+
+            if (!confirmar) return;
+
+            const { error } = await supabaseClient
+                .from('usuarios_sistema')
+                .upsert(usuarios, { onConflict: 'usuario' });
+
+            if (error) {
+                alert('Erro ao cadastrar usuários em massa: ' + error.message);
+                return;
+            }
+
+            document.getElementById('usuarios-massa').value = '';
+
+            alert(`${usuarios.length} funcionários cadastrados/atualizados com sucesso!`);
+        }
     </script>
 </body>
 </html>
