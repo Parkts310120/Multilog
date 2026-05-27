@@ -385,7 +385,17 @@
             <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
                 <h4 style="margin-top:0; color:#38bdf8;">👥 Usuários Cadastrados</h4>
                 <button class="btn-primary" onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
-            </div>
+        </div>
+
+        <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
+            <h4 style="margin-top:0; color:#38bdf8;">📦 Depositantes Cadastrados</h4>
+            <button class="btn-primary" onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
+        </div>
+
+        <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
+            <h4 style="margin-top:0; color:#38bdf8;">🛠️ Serviços Cadastrados</h4>
+            <button class="btn-primary" onclick="abrirPaginaServicos()">Abrir Lista de Serviços</button>
+        </div>
 
             <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
                 <h4 style="margin-top:0; color:#38bdf8;">📥 Cadastro em Massa de Funcionários</h4>
@@ -1172,6 +1182,99 @@
             document.getElementById('servicos-massa').value = '';
             await carregarCadastros();
             alert(`${servicos.length} serviços cadastrados/atualizados!`);
+        }
+
+        async function abrirPaginaDepositantes() {
+            const { data, error } = await supabaseClient
+                .from('depositantes')
+                .select('nome, ativo')
+                .order('nome');
+
+            if (error) {
+                alert('Erro ao carregar depositantes: ' + error.message);
+                return;
+            }
+
+            abrirTabelaNovaPagina('Depositantes Cadastrados', ['Nome', 'Status'], data.map(d => [
+                d.nome,
+                d.ativo ? 'Ativo' : 'Inativo'
+            ]));
+        }
+
+        async function abrirPaginaServicos() {
+            const { data, error } = await supabaseClient
+                .from('atividades_cadastro')
+                .select('nome, ativo')
+                .order('nome');
+
+            if (error) {
+                alert('Erro ao carregar serviços: ' + error.message);
+                return;
+            }
+
+            abrirTabelaNovaPagina('Serviços Cadastrados', ['Nome', 'Status'], data.map(s => [
+                s.nome,
+                s.ativo ? 'Ativo' : 'Inativo'
+            ]));
+        }
+
+        function abrirTabelaNovaPagina(titulo, colunas, linhas) {
+            const ths = colunas.map(c => `<th>${c}</th>`).join('');
+            const trs = linhas.map(linha => `
+                <tr>${linha.map(valor => `<td>${valor}</td>`).join('')}</tr>
+            `).join('');
+
+            const html = `
+                <!DOCTYPE html>
+                <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${titulo}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background:#0f172a;
+                            color:#f8fafc;
+                            padding:24px;
+                        }
+                        h1 {
+                            color:#38bdf8;
+                            text-align:center;
+                        }
+                        table {
+                            width:100%;
+                            border-collapse:collapse;
+                            background:#1e293b;
+                            border-radius:12px;
+                            overflow:hidden;
+                        }
+                        th, td {
+                            padding:12px;
+                            border-bottom:1px solid #334155;
+                            text-align:left;
+                        }
+                        th {
+                            background:#020617;
+                            color:#38bdf8;
+                        }
+                        tr:hover {
+                            background:#334155;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${titulo}</h1>
+                    <table>
+                        <thead><tr>${ths}</tr></thead>
+                        <tbody>${trs}</tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            const novaJanela = window.open('', '_blank');
+            novaJanela.document.write(html);
+            novaJanela.document.close();
         }
 
     </script>
