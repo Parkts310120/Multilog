@@ -382,14 +382,24 @@
 
         <div class="card" id="admin-cadastros-section" style="display:none;">
             <h3 style="margin-top:0;">⚙️ Cadastros Admin</h3>
-            <div class="input-group">
-                <label>Cadastro em Massa de Funcionários</label>
-                <textarea id="usuarios-massa" placeholder="43094_AGRICIO BENICIO SAMPAIO FILHO&#10;44380_JOÃO PAULO MATOS PEREIRA FORTES" style="width:100%; min-height:160px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#0f172a; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
+
+            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
+                <h4 style="margin-top:0; color:#38bdf8;">📥 Cadastro em Massa de Funcionários</h4>
+                <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;">
+                    Cole múltiplos usuários no formato:
+                    <br>
+                    <b>43094_AGRICIO BENICIO SAMPAIO FILHO</b>
+                </p>
+
+                <div class="input-group">
+                    <textarea id="usuarios-massa" placeholder="43094_AGRICIO BENICIO SAMPAIO FILHO&#10;44380_JOÃO PAULO MATOS PEREIRA FORTES" style="width:100%; min-height:220px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#020617; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
+                </div>
+
+                <button class="btn-primary" onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
             </div>
 
-            <button class="btn-primary" onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
-
             <hr style="margin:20px 0; border-color:#334155;">
+
             <div class="input-group">
                 <label>Nome do Usuário</label>
                 <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
