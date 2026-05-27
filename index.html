@@ -459,7 +459,6 @@
         });
 
         function openAdminCadastros() {
-
             if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
                 alert('Acesso negado.');
                 return;
@@ -658,7 +657,6 @@
         }
 
         async function openAdminHistory() {
-
             if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
                 alert('Acesso negado.');
                 return;
@@ -809,15 +807,12 @@
         }
 
         async function clearHistory() {
-
             if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
                 alert('Acesso negado.');
                 return;
             }
 
-            const confirmar = confirm('Deseja ocultar todo o histórico?');
-
-            if (!confirmar) return;
+            if (!confirm('Deseja ocultar todo o histórico?')) return;
 
             const { error } = await supabaseClient
                 .from('atividades')
@@ -830,7 +825,6 @@
             }
 
             await loadActivitiesFromSupabase();
-
             alert('Histórico ocultado da tela.');
         }
 
