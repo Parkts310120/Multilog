@@ -321,7 +321,7 @@
         <h1 id="app-title">Rastreador de Atividades</h1>
         <div class="subtitle" id="app-subtitle">Controle de tempo em tempo real</div>
 
-        <div class="card">
+        <div class="card" id="tracking-card">
             <div class="input-group">
                 <label for="user-name">Selecione o Executante</label>
                 <select id="user-name">
@@ -524,6 +524,7 @@
             }
 
             document.getElementById('admin-buttons').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('tracking-card').style.display = isAdmin ? 'none' : 'block';
             document.getElementById('admin-history-section').style.display = 'none';
             document.getElementById('admin-cadastros-section').style.display = 'none';
 
