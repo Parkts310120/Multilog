@@ -380,6 +380,40 @@
             <div id="history-container"></div>
         </div>
 
+        <div class="card" id="admin-cadastros-section" style="display:none;">
+            <h3 style="margin-top:0;">⚙️ Cadastros Admin</h3>
+
+            <div class="input-group">
+                <label>Novo Executante</label>
+                <input type="text" id="novo-executante" placeholder="Nome do executante">
+            </div>
+
+            <div class="input-group">
+                <label>Código / Matrícula</label>
+                <input type="text" id="novo-codigo" placeholder="Ex: 26331">
+            </div>
+
+            <button class="btn-primary" onclick="addExecutante()">Adicionar Executante</button>
+
+            <hr style="margin:20px 0; border-color:#334155;">
+
+            <div class="input-group">
+                <label>Novo Depositante</label>
+                <input type="text" id="novo-depositante" placeholder="Nome do depositante">
+            </div>
+
+            <button class="btn-primary" onclick="addDepositante()">Adicionar Depositante</button>
+
+            <hr style="margin:20px 0; border-color:#334155;">
+
+            <div class="input-group">
+                <label>Nova Atividade</label>
+                <input type="text" id="nova-atividade" placeholder="Nome da atividade">
+            </div>
+
+            <button class="btn-primary" onclick="addAtividadeCadastro()">Adicionar Atividade</button>
+        </div>
+
         <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
     </div>
 
