@@ -363,7 +363,7 @@
             </div>
         </div>
 
-        <div style="margin-bottom: 24px;">
+        <div id="admin-buttons" style="margin-bottom: 24px; display:none;">
             <button class="btn-primary" onclick="openAdminHistory()">🔐 Área Admin - Histórico</button>
             <button class="btn-primary" onclick="openAdminCadastros()">⚙️ Área Admin - Cadastros</button>
         </div>
@@ -382,6 +382,33 @@
 
         <div class="card" id="admin-cadastros-section" style="display:none;">
             <h3 style="margin-top:0;">⚙️ Cadastros Admin</h3>
+
+            <div class="input-group">
+                <label>Nome do Usuário</label>
+                <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
+            </div>
+
+            <div class="input-group">
+                <label>Login</label>
+                <input type="text" id="novo-usuario-login" placeholder="Ex: joao">
+            </div>
+
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" id="novo-usuario-senha" placeholder="Senha">
+            </div>
+
+            <div class="input-group">
+                <label>Tipo de Acesso</label>
+                <select id="novo-usuario-tipo">
+                    <option value="funcionario">Funcionário</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" onclick="addUsuarioSistema()">Adicionar Usuário do Sistema</button>
+
+            <hr style="margin:20px 0; border-color:#334155;">
 
             <div class="input-group">
                 <label>Novo Executante</label>
@@ -422,8 +449,7 @@
         const SUPABASE_URL = "https://pnoabqubkspbhluqdfwb.supabase.co";
         const SUPABASE_KEY = "sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        const CONF_USER = "admin";
-        const CONF_PASS = "123";
+        let usuarioLogado = null;
 
         let currentSession = null;
         let timerInterval = null;
@@ -445,20 +471,36 @@
             document.getElementById('admin-cadastros-section').style.display = 'block';
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             const userIn = document.getElementById('login-username').value.trim();
             const passIn = document.getElementById('login-password').value.trim();
             const errorEl = document.getElementById('login-error');
 
-            if (userIn === CONF_USER && passIn === CONF_PASS) {
-                errorEl.style.display = 'none';
-                showAppScreen();
-            } else {
+            const { data, error } = await supabaseClient
+                .from('usuarios_sistema')
+                .select('*')
+                .eq('usuario', userIn)
+                .eq('senha', passIn)
+                .eq('ativo', true)
+                .single();
+
+            if (error || !data) {
+                errorEl.innerText = 'Usuário ou senha incorretos!';
                 errorEl.style.display = 'block';
+                return;
             }
+
+            usuarioLogado = data;
+            errorEl.style.display = 'none';
+            showAppScreen();
         }
 
         function bypassLogin() {
+            usuarioLogado = {
+                nome: 'Administrador',
+                usuario: 'admin',
+                tipo: 'admin'
+            };
             showAppScreen();
         }
 
@@ -478,6 +520,10 @@
         function showAppScreen() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'block';
+
+            const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
+            document.getElementById('admin-buttons').style.display = isAdmin ? 'block' : 'none';
+
             initAppLogic();
         }
 
@@ -869,6 +915,34 @@
             document.getElementById('nova-atividade').value = '';
             await carregarCadastros();
             alert('Atividade cadastrada!');
+        }
+
+        async function addUsuarioSistema() {
+            const nome = document.getElementById('novo-usuario-nome').value.trim();
+            const usuario = document.getElementById('novo-usuario-login').value.trim();
+            const senha = document.getElementById('novo-usuario-senha').value.trim();
+            const tipo = document.getElementById('novo-usuario-tipo').value;
+
+            if (!nome || !usuario || !senha || !tipo) {
+                alert('Preencha todos os campos do usuário.');
+                return;
+            }
+
+            const { error } = await supabaseClient
+                .from('usuarios_sistema')
+                .insert({ nome, usuario, senha, tipo });
+
+            if (error) {
+                alert('Erro ao cadastrar usuário: ' + error.message);
+                return;
+            }
+
+            document.getElementById('novo-usuario-nome').value = '';
+            document.getElementById('novo-usuario-login').value = '';
+            document.getElementById('novo-usuario-senha').value = '';
+            document.getElementById('novo-usuario-tipo').value = 'funcionario';
+
+            alert('Usuário cadastrado com sucesso!');
         }
 
     </script>
