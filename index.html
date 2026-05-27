@@ -312,7 +312,6 @@
                 <input type="password" id="login-password" placeholder="Digite a senha" value="123">
             </div>
             <button class="btn-primary" onclick="handleLogin()">🔓 Entrar</button>
-            <button class="btn-test" onclick="bypassLogin()">Direct Access (Entrar sem Senha)</button>
             <div class="error-message" id="login-error">Usuário ou senha incorretos!</div>
         </div>
     </div>
@@ -460,11 +459,8 @@
         });
 
         function openAdminCadastros() {
-            const inputPass = prompt('Digite a senha admin para acessar os cadastros:');
-            if (inputPass === null) return;
-
-            if (inputPass !== CONF_PASS) {
-                alert('Senha incorreta!');
+            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+                alert('Acesso negado.');
                 return;
             }
 
@@ -492,15 +488,6 @@
 
             usuarioLogado = data;
             errorEl.style.display = 'none';
-            showAppScreen();
-        }
-
-        function bypassLogin() {
-            usuarioLogado = {
-                nome: 'Administrador',
-                usuario: 'admin',
-                tipo: 'admin'
-            };
             showAppScreen();
         }
 
@@ -670,16 +657,13 @@
         }
 
         async function openAdminHistory() {
-            const inputPass = prompt('Digite a senha admin para acessar o histórico:');
-            if (inputPass === null) return;
-            if (inputPass !== CONF_PASS) {
-                alert('Senha incorreta!');
+            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+                alert('Acesso negado.');
                 return;
             }
+
             document.getElementById('admin-history-section').style.display = 'block';
-            if (document.getElementById('admin-history-section').style.display !== 'none') {
-                await loadActivitiesFromSupabase();
-            }
+            await loadActivitiesFromSupabase();
         }
 
         function formatSeconds(seconds) {
@@ -823,13 +807,15 @@
         }
 
         async function clearHistory() {
-            const inputPass = prompt('Apenas administradores podem ocultar o histórico.\nDigite a senha master para confirmar:');
-            if (inputPass === null) return;
 
-            if (inputPass !== CONF_PASS) {
-                alert('Senha incorreta! Operação cancelada.');
+            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+                alert('Acesso negado.');
                 return;
             }
+
+            const confirmar = confirm('Deseja ocultar todo o histórico?');
+
+            if (!confirmar) return;
 
             const { error } = await supabaseClient
                 .from('atividades')
@@ -843,7 +829,7 @@
 
             await loadActivitiesFromSupabase();
 
-            alert('Histórico ocultado da tela. Os dados continuam no Supabase.');
+            alert('Histórico ocultado da tela.');
         }
 
         async function carregarCadastros() {
