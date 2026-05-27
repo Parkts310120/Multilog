@@ -170,7 +170,6 @@ function showAppScreen(){
 }
 
 async function initAppLogic(){
-    document.getElementById('user-name').disabled=false;
     document.getElementById('depositor-name').disabled=false;
     document.getElementById('activity-name').disabled=false;
     document.getElementById('btn-start').disabled=false;
@@ -178,38 +177,55 @@ async function initAppLogic(){
 
     clearInterval(timerInterval);
     updateStatusUI(false);
+
     await carregarCadastros();
 }
 
 async function carregarCadastros(){
-    const {data:executantes,error:erroExec}=await supabaseClient.from('executantes').select('*').eq('ativo',true).order('nome');
-    const {data:depositantes,error:erroDep}=await supabaseClient.from('depositantes').select('*').eq('ativo',true).order('nome');
-    const {data:servicos,error:erroServ}=await supabaseClient.from('atividades_cadastro').select('*').eq('ativo',true).order('nome');
 
-    if(erroExec){alert('Erro ao carregar executantes: '+erroExec.message);return;}
-    if(erroDep){alert('Erro ao carregar depositantes: '+erroDep.message);return;}
-    if(erroServ){alert('Erro ao carregar serviços: '+erroServ.message);return;}
+    const {data:depositantes,error:erroDep}=await supabaseClient
+        .from('depositantes')
+        .select('*')
+        .eq('ativo',true)
+        .order('nome');
 
-    const userSelect=document.getElementById('user-name');
+    const {data:servicos,error:erroServ}=await supabaseClient
+        .from('atividades_cadastro')
+        .select('*')
+        .eq('ativo',true)
+        .order('nome');
+
+    if(erroDep){
+        alert('Erro ao carregar depositantes: '+erroDep.message);
+        return;
+    }
+
+    if(erroServ){
+        alert('Erro ao carregar serviços: '+erroServ.message);
+        return;
+    }
+
     const depSelect=document.getElementById('depositor-name');
     const ativSelect=document.getElementById('activity-name');
 
-    userSelect.innerHTML='';
     depSelect.innerHTML='';
     ativSelect.innerHTML='';
 
-    executantes.forEach(e=>{
-        const texto=e.codigo?`${e.nome} (${e.codigo})`:e.nome;
-        userSelect.innerHTML+=`<option value="${texto}">${texto}</option>`;
-    });
+    if(!depositantes || depositantes.length===0){
+        depSelect.innerHTML='<option value="">Nenhum depositante cadastrado</option>';
+    }else{
+        depositantes.forEach(d=>{
+            depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
+        });
+    }
 
-    depositantes.forEach(d=>{
-        depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
-    });
-
-    servicos.forEach(s=>{
-        ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
-    });
+    if(!servicos || servicos.length===0){
+        ativSelect.innerHTML='<option value="">Nenhum serviço cadastrado</option>';
+    }else{
+        servicos.forEach(s=>{
+            ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
+        });
+    }
 }
 
 function updateStatusUI(isRunning){
@@ -255,7 +271,6 @@ function startTracking(){
 
     currentSession={user,depositor,name,startTime:startTime.toISOString()};
 
-    document.getElementById('user-name').disabled=true;
     document.getElementById('depositor-name').disabled=true;
     document.getElementById('activity-name').disabled=true;
     document.getElementById('btn-start').disabled=true;
