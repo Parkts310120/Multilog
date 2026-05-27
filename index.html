@@ -317,7 +317,7 @@
     </div>
 
     <div class="container" id="app-screen" style="display: none;">
-        <h1>Rastreador de Atividades</h1>
+
         <h1 id="app-title">Rastreador de Atividades</h1>
         <div class="subtitle" id="app-subtitle">Controle de tempo em tempo real</div>
 
@@ -510,25 +510,25 @@
         }
 
         function showAppScreen() {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'block';
 
-    const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
+            const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
 
-    if (isAdmin) {
-        document.getElementById('app-title').innerText = 'Portal Administrativo';
-        document.getElementById('app-subtitle').innerText = 'Gerencie usuários, depositantes, atividades e histórico';
-    } else {
-        document.getElementById('app-title').innerText = 'Registro de Atividade';
-        document.getElementById('app-subtitle').innerText = 'Selecione os dados cadastrados e registre o tempo';
-    }
+            if (isAdmin) {
+                document.getElementById('app-title').innerText = 'Portal Administrativo';
+                document.getElementById('app-subtitle').innerText = 'Gerencie usuários, depositantes, atividades e histórico';
+            } else {
+                document.getElementById('app-title').innerText = 'Registro de Atividade';
+                document.getElementById('app-subtitle').innerText = 'Selecione os dados cadastrados e registre o tempo';
+            }
 
-    document.getElementById('admin-buttons').style.display = isAdmin ? 'block' : 'none';
-    document.getElementById('admin-history-section').style.display = 'none';
-    document.getElementById('admin-cadastros-section').style.display = 'none';
+            document.getElementById('admin-buttons').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('admin-history-section').style.display = 'none';
+            document.getElementById('admin-cadastros-section').style.display = 'none';
 
-    initAppLogic();
-}
+            initAppLogic();
+        }
 
         async function initAppLogic() {
             document.getElementById('user-name').disabled = false;
