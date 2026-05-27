@@ -500,8 +500,12 @@
         }
 
         function showLoginScreen() {
+            usuarioLogado = null;
             document.getElementById('login-screen').style.display = 'block';
             document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('admin-buttons').style.display = 'none';
+            document.getElementById('admin-history-section').style.display = 'none';
+            document.getElementById('admin-cadastros-section').style.display = 'none';
         }
 
         function showAppScreen() {
@@ -509,7 +513,10 @@
             document.getElementById('app-screen').style.display = 'block';
 
             const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
+
             document.getElementById('admin-buttons').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('admin-history-section').style.display = 'none';
+            document.getElementById('admin-cadastros-section').style.display = 'none';
 
             initAppLogic();
         }
