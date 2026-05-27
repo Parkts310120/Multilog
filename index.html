@@ -341,7 +341,7 @@
             </div>
 
             <div class="input-group">
-                <label for="activity-name">Selecione a Atividade</label>
+                <label for="activity-name">Selecione o Serviço</label>
                 <select id="activity-name">
                     <option value="RETRABALHO HUSQVARNA">RETRABALHO HUSQVARNA</option>
                     <option value="JOGAR ENTULHO NA CAÇAMBA">JOGAR ENTULHO NA CAÇAMBA</option>
@@ -404,7 +404,26 @@
 
             <hr style="margin:20px 0; border-color:#334155;">
 
-            
+            <h4 style="margin-top:0; color:#38bdf8;">🔐 Cadastrar Admin</h4>
+
+            <div class="input-group">
+                <label>Nome do Admin</label>
+                <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
+            </div>
+
+            <div class="input-group">
+                <label>Login do Admin</label>
+                <input type="text" id="novo-usuario-login" placeholder="Ex: joao">
+            </div>
+
+            <div class="input-group">
+                <label>Senha do Admin</label>
+                <input type="password" id="novo-usuario-senha" placeholder="Senha">
+            </div>
+
+            <button class="btn-primary" onclick="addUsuarioSistema()">Adicionar Admin</button>
+
+            <hr style="margin:20px 0; border-color:#334155;">
 
             <div class="input-group">
                 <label>Novo Executante</label>
@@ -420,6 +439,13 @@
 
             <hr style="margin:20px 0; border-color:#334155;">
 
+            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
+                <h4 style="margin-top:0; color:#38bdf8;">📦 Cadastro em Massa de Depositantes</h4>
+                <p style="font-size:0.85rem; color:#94a3b8;">Cole um depositante por linha.</p>
+                <textarea id="depositantes-massa" placeholder="HUSQVARNA&#10;BOSCH&#10;TECNOS" style="width:100%; min-height:140px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#020617; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
+                <button class="btn-primary" onclick="addDepositantesEmMassa()">Cadastrar Depositantes em Massa</button>
+            </div>
+
             <div class="input-group">
                 <label>Novo Depositante</label>
                 <input type="text" id="novo-depositante" placeholder="Nome do depositante">
@@ -429,13 +455,19 @@
 
             <hr style="margin:20px 0; border-color:#334155;">
 
-            <div class="input-group">
-                <label>Nova Atividade</label>
-                <input type="text" id="nova-atividade" placeholder="Nome da atividade">
+            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
+                <h4 style="margin-top:0; color:#38bdf8;">🛠️ Cadastro em Massa de Serviços</h4>
+                <p style="font-size:0.85rem; color:#94a3b8;">Cole um serviço por linha.</p>
+                <textarea id="servicos-massa" placeholder="DESCARTE&#10;RETRABALHO&#10;SEPARAÇÃO" style="width:100%; min-height:140px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#020617; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
+                <button class="btn-primary" onclick="addServicosEmMassa()">Cadastrar Serviços em Massa</button>
             </div>
 
-            <button class="btn-primary" onclick="addAtividadeCadastro()">Adicionar Atividade</button>
-        </div>
+            <div class="input-group">
+                <label>Novo Serviço</label>
+                <input type="text" id="nova-atividade" placeholder="Nome do serviço">
+            </div>
+
+            <button class="btn-primary" onclick="addAtividadeCadastro()">Adicionar Serviço</button>        </div>
 
         <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
     </div>
@@ -1097,6 +1129,51 @@
             novaJanela.document.write(html);
             novaJanela.document.close();
         }
+
+        async function addDepositantesEmMassa() {
+            const texto = document.getElementById('depositantes-massa').value.trim();
+            if (!texto) return alert('Cole a lista de depositantes.');
+
+            const depositantes = texto.split(/\r?\n/)
+                .map(linha => linha.trim())
+                .filter(nome => nome)
+                .map(nome => ({ nome, ativo: true }));
+
+            if (depositantes.length === 0) return alert('Nenhum depositante válido encontrado.');
+
+            const { error } = await supabaseClient
+                .from('depositantes')
+                .upsert(depositantes, { onConflict: 'nome' });
+
+            if (error) return alert('Erro ao cadastrar depositantes: ' + error.message);
+
+            document.getElementById('depositantes-massa').value = '';
+            await carregarCadastros();
+            alert(`${depositantes.length} depositantes cadastrados/atualizados!`);
+        }
+
+        async function addServicosEmMassa() {
+            const texto = document.getElementById('servicos-massa').value.trim();
+            if (!texto) return alert('Cole a lista de serviços.');
+
+            const servicos = texto.split(/\r?\n/)
+                .map(linha => linha.trim())
+                .filter(nome => nome)
+                .map(nome => ({ nome, ativo: true }));
+
+            if (servicos.length === 0) return alert('Nenhum serviço válido encontrado.');
+
+            const { error } = await supabaseClient
+                .from('atividades_cadastro')
+                .upsert(servicos, { onConflict: 'nome' });
+
+            if (error) return alert('Erro ao cadastrar serviços: ' + error.message);
+
+            document.getElementById('servicos-massa').value = '';
+            await carregarCadastros();
+            alert(`${servicos.length} serviços cadastrados/atualizados!`);
+        }
+
     </script>
 </body>
 </html>
