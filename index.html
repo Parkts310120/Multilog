@@ -358,14 +358,14 @@
             </div>
 
             <div class="btn-grid">
-                <button id="btn-start" class="btn-start" onclick="startTracking()">⏱️ Iniciar</button>
-                <button id="btn-end" class="btn-end" onclick="stopTracking()" disabled>🛑 Finalizar</button>
+                <button class="btn-primary" onclick="abrirPaginaAdminHistorico()">🔐 Área Admin - Histórico</button>
+                <button class="btn-primary" onclick="abrirPaginaAdminCadastros()">⚙️ Área Admin - Cadastros</button>           
             </div>
         </div>
 
         <div id="admin-buttons" style="margin-bottom: 24px; display:none;">
-            <button class="btn-primary" onclick="openAdminHistory()">🔐 Área Admin - Histórico</button>
-            <button class="btn-primary" onclick="openAdminCadastros()">⚙️ Área Admin - Cadastros</button>
+                <button class="btn-primary" onclick="window.open('admin-historico.html', '_blank')">🔐 Área Admin - Histórico</button>
+                <button class="btn-primary" onclick="window.open('admin-cadastros.html', '_blank')">⚙️ Área Admin - Cadastros</button>  
         </div>
 
         <div class="history-section" id="admin-history-section" style="display: none;">
@@ -1275,6 +1275,24 @@
             const novaJanela = window.open('', '_blank');
             novaJanela.document.write(html);
             novaJanela.document.close();
+        }
+
+        function abrirPaginaAdminHistorico() {
+            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+                alert('Acesso negado.');
+                return;
+            }
+
+            openAdminHistory();
+        }
+
+        function abrirPaginaAdminCadastros() {
+            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
+                alert('Acesso negado.');
+                return;
+            }
+
+            openAdminCadastros();
         }
 
     </script>
