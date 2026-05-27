@@ -515,23 +515,37 @@
 
             const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
 
+            const trackingCard = document.getElementById('tracking-card');
+            const adminButtons = document.getElementById('admin-buttons');
+            const historySection = document.getElementById('admin-history-section');
+            const cadastroSection = document.getElementById('admin-cadastros-section');
+
             if (isAdmin) {
                 document.getElementById('app-title').innerText = 'Portal Administrativo';
                 document.getElementById('app-subtitle').innerText = 'Gerencie usuários, depositantes, atividades e histórico';
+
+                trackingCard.style.display = 'none';
+                adminButtons.style.display = 'block';
+
             } else {
                 document.getElementById('app-title').innerText = 'Registro de Atividade';
                 document.getElementById('app-subtitle').innerText = 'Selecione os dados cadastrados e registre o tempo';
+
+                trackingCard.style.display = 'block';
+                adminButtons.style.display = 'none';
             }
 
-            document.getElementById('admin-buttons').style.display = isAdmin ? 'block' : 'none';
-            document.getElementById('tracking-card').style.display = isAdmin ? 'none' : 'block';
-            document.getElementById('admin-history-section').style.display = 'none';
-            document.getElementById('admin-cadastros-section').style.display = 'none';
+            historySection.style.display = 'none';
+            cadastroSection.style.display = 'none';
 
             initAppLogic();
         }
 
         async function initAppLogic() {
+            const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
+            if (isAdmin) {
+                return;
+            }
             document.getElementById('user-name').disabled = false;
             document.getElementById('depositor-name').disabled = false;
             document.getElementById('activity-name').disabled = false;
