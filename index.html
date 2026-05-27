@@ -404,32 +404,7 @@
 
             <hr style="margin:20px 0; border-color:#334155;">
 
-            <div class="input-group">
-                <label>Nome do Usuário</label>
-                <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
-            </div>
-
-            <div class="input-group">
-                <label>Login</label>
-                <input type="text" id="novo-usuario-login" placeholder="Ex: joao">
-            </div>
-
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" id="novo-usuario-senha" placeholder="Senha">
-            </div>
-
-            <div class="input-group">
-                <label>Tipo de Acesso</label>
-                <select id="novo-usuario-tipo">
-                    <option value="funcionario">Funcionário</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
-
-            <button class="btn-primary" onclick="addUsuarioSistema()">Adicionar Usuário do Sistema</button>
-
-            <hr style="margin:20px 0; border-color:#334155;">
+            
 
             <div class="input-group">
                 <label>Novo Executante</label>
@@ -911,18 +886,44 @@
             const nome = document.getElementById('novo-executante').value.trim();
             const codigo = document.getElementById('novo-codigo').value.trim();
 
-            if (!nome) return alert('Digite o nome do executante.');
+            if (!nome || !codigo) {
+                alert('Digite o nome e a matrícula do executante.');
+                return;
+            }
 
-            const { error } = await supabaseClient.from('executantes').insert({ nome, codigo });
+            const textoExecutante = `${nome} (${codigo})`;
 
-            if (error) return alert('Erro: ' + error.message);
+            const { error: erroExecutante } = await supabaseClient
+                .from('executantes')
+                .insert({ nome, codigo });
+
+            if (erroExecutante) {
+                alert('Erro ao cadastrar executante: ' + erroExecutante.message);
+                return;
+            }
+
+            const { error: erroUsuario } = await supabaseClient
+                .from('usuarios_sistema')
+                .upsert({
+                    nome: nome,
+                    usuario: codigo,
+                    senha: codigo,
+                    tipo: 'funcionario',
+                    ativo: true
+                }, { onConflict: 'usuario' });
+
+            if (erroUsuario) {
+                alert('Executante cadastrado, mas erro ao criar login: ' + erroUsuario.message);
+                return;
+            }
 
             document.getElementById('novo-executante').value = '';
             document.getElementById('novo-codigo').value = '';
-            await carregarCadastros();
-            alert('Executante cadastrado!');
-        }
 
+            await carregarCadastros();
+
+            alert(`Executante cadastrado!\n\nLogin: ${codigo}\nSenha: ${codigo}`);
+        }
         async function addDepositante() {
             const nome = document.getElementById('novo-depositante').value.trim();
 
@@ -951,33 +952,7 @@
             alert('Atividade cadastrada!');
         }
 
-        async function addUsuarioSistema() {
-            const nome = document.getElementById('novo-usuario-nome').value.trim();
-            const usuario = document.getElementById('novo-usuario-login').value.trim();
-            const senha = document.getElementById('novo-usuario-senha').value.trim();
-            const tipo = document.getElementById('novo-usuario-tipo').value;
-
-            if (!nome || !usuario || !senha || !tipo) {
-                alert('Preencha todos os campos do usuário.');
-                return;
-            }
-
-            const { error } = await supabaseClient
-                .from('usuarios_sistema')
-                .insert({ nome, usuario, senha, tipo });
-
-            if (error) {
-                alert('Erro ao cadastrar usuário: ' + error.message);
-                return;
-            }
-
-            document.getElementById('novo-usuario-nome').value = '';
-            document.getElementById('novo-usuario-login').value = '';
-            document.getElementById('novo-usuario-senha').value = '';
-            document.getElementById('novo-usuario-tipo').value = 'funcionario';
-
-            alert('Usuário cadastrado com sucesso!');
-        }
+        
         async function addUsuariosEmMassa() {
             const texto = document.getElementById('usuarios-massa').value.trim();
 
@@ -1040,7 +1015,7 @@
             alert(`${usuarios.length} funcionários cadastrados/atualizados com sucesso!`);
         }
 
-
+        
         async function abrirPaginaUsuarios() {
             const { data, error } = await supabaseClient
                 .from('usuarios_sistema')
