@@ -365,6 +365,7 @@
 
         <div style="margin-bottom: 24px;">
             <button class="btn-primary" onclick="openAdminHistory()">🔐 Área Admin - Histórico</button>
+            <button class="btn-primary" onclick="openAdminCadastros()">⚙️ Área Admin - Cadastros</button>
         </div>
 
         <div class="history-section" id="admin-history-section" style="display: none;">
@@ -397,6 +398,18 @@
         document.addEventListener('DOMContentLoaded', () => {
             showLoginScreen();
         });
+
+        function openAdminCadastros() {
+            const inputPass = prompt('Digite a senha admin para acessar os cadastros:');
+            if (inputPass === null) return;
+
+            if (inputPass !== CONF_PASS) {
+                alert('Senha incorreta!');
+                return;
+            }
+
+            document.getElementById('admin-cadastros-section').style.display = 'block';
+        }
 
         function handleLogin() {
             const userIn = document.getElementById('login-username').value.trim();
@@ -443,6 +456,7 @@
             
             clearInterval(timerInterval);
             updateStatusUI(false);
+            await carregarCadastros();
             await loadActivitiesFromSupabase();
         }
            
@@ -750,6 +764,77 @@
             await loadActivitiesFromSupabase();
 
             alert('Histórico ocultado da tela. Os dados continuam no Supabase.');
+        }
+
+        async function carregarCadastros() {
+            const { data: executantes } = await supabaseClient.from('executantes').select('*').eq('ativo', true).order('nome');
+            const { data: depositantes } = await supabaseClient.from('depositantes').select('*').eq('ativo', true).order('nome');
+            const { data: atividades } = await supabaseClient.from('atividades_cadastro').select('*').eq('ativo', true).order('nome');
+
+            const userSelect = document.getElementById('user-name');
+            const depSelect = document.getElementById('depositor-name');
+            const ativSelect = document.getElementById('activity-name');
+
+            userSelect.innerHTML = '';
+            depSelect.innerHTML = '';
+            ativSelect.innerHTML = '';
+
+            executantes.forEach(e => {
+                const texto = e.codigo ? `${e.nome} (${e.codigo})` : e.nome;
+                userSelect.innerHTML += `<option value="${texto}">${texto}</option>`;
+            });
+
+            depositantes.forEach(d => {
+                depSelect.innerHTML += `<option value="${d.nome}">${d.nome}</option>`;
+            });
+
+            atividades.forEach(a => {
+                ativSelect.innerHTML += `<option value="${a.nome}">${a.nome}</option>`;
+            });
+        }
+
+        async function addExecutante() {
+            const nome = document.getElementById('novo-executante').value.trim();
+            const codigo = document.getElementById('novo-codigo').value.trim();
+
+            if (!nome) return alert('Digite o nome do executante.');
+
+            const { error } = await supabaseClient.from('executantes').insert({ nome, codigo });
+
+            if (error) return alert('Erro: ' + error.message);
+
+            document.getElementById('novo-executante').value = '';
+            document.getElementById('novo-codigo').value = '';
+            await carregarCadastros();
+            alert('Executante cadastrado!');
+        }
+
+        async function addDepositante() {
+            const nome = document.getElementById('novo-depositante').value.trim();
+
+            if (!nome) return alert('Digite o nome do depositante.');
+
+            const { error } = await supabaseClient.from('depositantes').insert({ nome });
+
+            if (error) return alert('Erro: ' + error.message);
+
+            document.getElementById('novo-depositante').value = '';
+            await carregarCadastros();
+            alert('Depositante cadastrado!');
+        }
+
+        async function addAtividadeCadastro() {
+            const nome = document.getElementById('nova-atividade').value.trim();
+
+            if (!nome) return alert('Digite o nome da atividade.');
+
+            const { error } = await supabaseClient.from('atividades_cadastro').insert({ nome });
+
+            if (error) return alert('Erro: ' + error.message);
+
+            document.getElementById('nova-atividade').value = '';
+            await carregarCadastros();
+            alert('Atividade cadastrada!');
         }
 
     </script>
