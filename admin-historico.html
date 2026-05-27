@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Histórico</title>
+<style>
+:root{--bg-color:#0f172a;--card-bg:#1e293b;--primary:#38bdf8;--danger:#ef4444;--text:#f8fafc;--text-secondary:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:var(--bg-color);color:var(--text);margin:0;padding:16px;display:flex;justify-content:center}
+.container{width:100%;max-width:750px}
+h1{text-align:center;color:var(--primary)}
+.card{background:var(--card-bg);padding:20px;border-radius:16px;border:1px solid var(--border);margin-bottom:20px}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--primary);font-weight:bold;cursor:pointer;margin-bottom:12px}
+.btn-danger{background:var(--danger);color:white}
+.time-row{display:flex;font-size:.9rem;color:var(--text-secondary);margin-top:6px;gap:12px}
+.time-label{width:70px;font-weight:bold}
+.activity-item{background:#0f172a;padding:16px;border-radius:12px;margin-bottom:12px;border-left:4px solid var(--primary)}
+.activity-name{font-weight:bold;font-size:1.05rem}
+.duration-box{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--primary);font-weight:bold}
+.empty-state{text-align:center;color:var(--text-secondary);padding:24px;border:1px dashed var(--border);border-radius:12px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🔐 Histórico Admin</h1>
+
+<div class="card">
+<h3>📊 Relatórios</h3>
+<div id="admin-reports"></div>
+</div>
+
+<div class="card">
+<button onclick="exportCSV()">📥 Exportar CSV</button>
+<button class="btn-danger" onclick="clearHistory()">Ocultar Todo Histórico</button>
+</div>
+
+<div class="card">
+<h3>Histórico de Atividades</h3>
+<div id="history-container"></div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
+const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let globalActivities=[];
+
+document.addEventListener('DOMContentLoaded',loadActivitiesFromSupabase);
+
+async function loadActivitiesFromSupabase(){
+const {data,error}=await supabaseClient.from('atividades').select('*').eq('visivel',true).order('id',{ascending:false});
+if(error){alert('Erro ao carregar histórico: '+error.message);return;}
+globalActivities=data.map(item=>({
+id:item.id,
+user:item.usuario,
+depositor:item.depositante,
+name:item.atividade,
+start:formatDateTime(new Date(item.inicio)),
+end:formatDateTime(new Date(item.fim)),
+duration:item.duracao,
+duracao_segundos:item.duracao_segundos||0
+}));
+renderReports();
+renderActivities();
+}
+
+function formatDateTime(dateObj){
+const date=dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+const time=dateObj.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+return `${date} às ${time}`;
+}
+
+function formatSeconds(seconds){
+const hrs=Math.floor(seconds/3600);
+const mins=Math.floor((seconds%3600)/60);
+const secs=seconds%60;
+return `${hrs}h ${mins}min ${secs}s`;
+}
+
+function renderReports(){
+const reportsDiv=document.getElementById('admin-reports');
+let totalSegundos=0;
+const usuarios={};
+const depositantes={};
+const servicos={};
+
+globalActivities.forEach(act=>{
+const seg=act.duracao_segundos||0;
+totalSegundos+=seg;
+usuarios[act.user]=(usuarios[act.user]||0)+seg;
+depositantes[act.depositor]=(depositantes[act.depositor]||0)+seg;
+servicos[act.name]=(servicos[act.name]||0)+seg;
+});
+
+reportsDiv.innerHTML=`
+<div class="time-row"><div style="font-weight:bold;">Total de atividades</div><div style="margin-left:auto;">${globalActivities.length}</div></div>
+<div class="time-row"><div style="font-weight:bold;">Tempo total</div><div style="margin-left:auto;">${formatSeconds(totalSegundos)}</div></div>
+<hr style="margin:16px 0;border-color:#334155;">
+<h4>🏆 Ranking por Usuário</h4>
+${montarRanking(usuarios,'👤')}
+<hr style="margin:16px 0;border-color:#334155;">
+<h4>📦 Ranking por Depositante</h4>
+${montarRanking(depositantes,'📦')}
+<hr style="margin:16px 0;border-color:#334155;">
+<h4>🛠️ Ranking por Serviço</h4>
+${montarRanking(servicos,'🛠️')}
+`;
+}
+
+function montarRanking(obj,icone){
+return Object.entries(obj).sort((a,b)=>b[1]-a[1]).map(([nome,seg])=>`
+<div class="time-row">
+<div style="font-weight:bold;">${icone} ${nome}</div>
+<div style="margin-left:auto;">${formatSeconds(seg)}</div>
+</div>
+`).join('')||'<div class="empty-state">Sem dados.</div>';
+}
+
+function renderActivities(){
+const container=document.getElementById('history-container');
+container.innerHTML='';
+if(globalActivities.length===0){
+container.innerHTML='<div class="empty-state">Nenhuma atividade concluída ainda.</div>';
+return;
+}
+globalActivities.forEach(act=>{
+const div=document.createElement('div');
+div.className='activity-item';
+div.innerHTML=`
+<div class="activity-name">${act.name}</div>
+<div class="time-row"><div class="time-label">Usuário:</div><div>${act.user}</div></div>
+<div class="time-row"><div class="time-label">Dep.:</div><div>${act.depositor}</div></div>
+<div class="time-row"><div class="time-label">Início:</div><div>${act.start}</div></div>
+<div class="time-row"><div class="time-label">Fim:</div><div>${act.end}</div></div>
+<div class="duration-box">⏱️ Tempo total: ${act.duration}</div>
+<button class="btn-danger" onclick="deleteSingleItem(${act.id})">Ocultar Registro</button>
+`;
+container.appendChild(div);
+});
+}
+
+async function deleteSingleItem(id){
+if(!confirm('Deseja ocultar este registro? Ele continuará salvo no banco.'))return;
+const {error}=await supabaseClient.from('atividades').update({visivel:false}).eq('id',id);
+if(error){alert('Erro ao ocultar registro: '+error.message);return;}
+await loadActivitiesFromSupabase();
+}
+
+async function clearHistory(){
+if(!confirm('Deseja ocultar todo o histórico? Os dados continuarão no Supabase.'))return;
+const {error}=await supabaseClient.from('atividades').update({visivel:false}).eq('visivel',true);
+if(error){alert('Erro ao ocultar histórico: '+error.message);return;}
+await loadActivitiesFromSupabase();
+alert('Histórico ocultado da tela.');
+}
+
+function exportCSV(){
+let csv='Usuario,Depositante,Servico,Inicio,Fim,Duracao\n';
+globalActivities.forEach(act=>{
+csv+=`"${act.user}","${act.depositor}","${act.name}","${act.start}","${act.end}","${act.duration}"\n`;
+});
+const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+const link=document.createElement('a');
+link.href=URL.createObjectURL(blob);
+link.download='relatorio_atividades.csv';
+link.click();
+}
+</script>
+</body>
+</html>

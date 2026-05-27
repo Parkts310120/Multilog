@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Cadastros</title>
+<style>
+:root{--bg-color:#0f172a;--card-bg:#1e293b;--primary:#38bdf8;--text:#f8fafc;--text-secondary:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:var(--bg-color);color:var(--text);margin:0;padding:16px;display:flex;justify-content:center}
+.container{width:100%;max-width:650px}
+h1{text-align:center;color:var(--primary)}
+.card{background:var(--card-bg);padding:20px;border-radius:16px;border:1px solid var(--border);margin-bottom:20px}
+label{display:block;color:var(--text-secondary);font-weight:bold;margin-bottom:6px;text-transform:uppercase;font-size:.8rem}
+input,textarea,select{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:#020617;color:var(--text);font-size:1rem;margin-bottom:14px}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--primary);font-weight:bold;cursor:pointer;margin-bottom:12px}
+.box{background:#0f172a;padding:14px;border-radius:10px;border:1px solid var(--border);margin-bottom:20px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚙️ Cadastros Admin</h1>
+
+<div class="card">
+<div class="box">
+<h3>👥 Listas</h3>
+<button onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
+<button onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
+<button onclick="abrirPaginaServicos()">Abrir Lista de Serviços</button>
+</div>
+
+<div class="box">
+<h3>📥 Cadastro em Massa de Funcionários</h3>
+<p style="color:#94a3b8">Formato: <b>43094_AGRICIO BENICIO SAMPAIO FILHO</b></p>
+<textarea id="usuarios-massa" style="min-height:180px"></textarea>
+<button onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
+</div>
+
+<div class="box">
+<h3>🔐 Cadastrar Admin</h3>
+<label>Nome do Admin</label>
+<input id="novo-usuario-nome">
+<label>Login do Admin</label>
+<input id="novo-usuario-login">
+<label>Senha do Admin</label>
+<input id="novo-usuario-senha" type="password">
+<button onclick="addUsuarioSistema()">Adicionar Admin</button>
+</div>
+
+<div class="box">
+<h3>👤 Cadastrar Executante</h3>
+<label>Nome do Executante</label>
+<input id="novo-executante">
+<label>Matrícula</label>
+<input id="novo-codigo">
+<button onclick="addExecutante()">Adicionar Executante</button>
+</div>
+
+<div class="box">
+<h3>📦 Cadastro em Massa de Depositantes</h3>
+<textarea id="depositantes-massa" style="min-height:120px"></textarea>
+<button onclick="addDepositantesEmMassa()">Cadastrar Depositantes</button>
+</div>
+
+<div class="box">
+<h3>🛠️ Cadastro em Massa de Serviços</h3>
+<textarea id="servicos-massa" style="min-height:120px"></textarea>
+<button onclick="addServicosEmMassa()">Cadastrar Serviços</button>
+</div>
+
+<div class="box">
+<h3>📦 Novo Depositante</h3>
+<input id="novo-depositante">
+<button onclick="addDepositante()">Adicionar Depositante</button>
+</div>
+
+<div class="box">
+<h3>🛠️ Novo Serviço</h3>
+<input id="nova-atividade">
+<button onclick="addAtividadeCadastro()">Adicionar Serviço</button>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
+const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+async function addUsuarioSistema(){
+const nome=document.getElementById('novo-usuario-nome').value.trim();
+const usuario=document.getElementById('novo-usuario-login').value.trim();
+const senha=document.getElementById('novo-usuario-senha').value.trim();
+if(!nome||!usuario||!senha)return alert('Preencha nome, login e senha.');
+const {error}=await supabaseClient.from('usuarios_sistema').upsert({nome,usuario,senha,tipo:'admin',ativo:true},{onConflict:'usuario'});
+if(error)return alert(error.message);
+alert('Admin cadastrado!');
+}
+
+async function addExecutante(){
+const nome=document.getElementById('novo-executante').value.trim();
+const codigo=document.getElementById('novo-codigo').value.trim();
+if(!nome||!codigo)return alert('Digite nome e matrícula.');
+let e1=await supabaseClient.from('executantes').insert({nome,codigo});
+if(e1.error)return alert(e1.error.message);
+let e2=await supabaseClient.from('usuarios_sistema').upsert({nome,usuario:codigo,senha:codigo,tipo:'funcionario',ativo:true},{onConflict:'usuario'});
+if(e2.error)return alert(e2.error.message);
+alert(`Executante cadastrado!\nLogin: ${codigo}\nSenha: ${codigo}`);
+}
+
+async function addUsuariosEmMassa(){
+const texto=document.getElementById('usuarios-massa').value.trim();
+if(!texto)return alert('Cole a lista.');
+const usuarios=texto.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
+const p=l.split('_');return{usuario:p[0].trim(),senha:p[0].trim(),nome:p.slice(1).join('_').trim(),tipo:'funcionario',ativo:true};
+}).filter(u=>u.usuario&&u.nome);
+const {error}=await supabaseClient.from('usuarios_sistema').upsert(usuarios,{onConflict:'usuario'});
+if(error)return alert(error.message);
+alert(`${usuarios.length} funcionários cadastrados.`);
+}
+
+async function addDepositante(){
+const nome=document.getElementById('novo-depositante').value.trim();
+if(!nome)return alert('Digite o depositante.');
+const {error}=await supabaseClient.from('depositantes').insert({nome});
+if(error)return alert(error.message);
+alert('Depositante cadastrado!');
+}
+
+async function addAtividadeCadastro(){
+const nome=document.getElementById('nova-atividade').value.trim();
+if(!nome)return alert('Digite o serviço.');
+const {error}=await supabaseClient.from('atividades_cadastro').insert({nome});
+if(error)return alert(error.message);
+alert('Serviço cadastrado!');
+}
+
+async function addDepositantesEmMassa(){
+const itens=document.getElementById('depositantes-massa').value.trim().split(/\r?\n/).map(nome=>({nome:nome.trim(),ativo:true})).filter(x=>x.nome);
+const {error}=await supabaseClient.from('depositantes').upsert(itens,{onConflict:'nome'});
+if(error)return alert(error.message);
+alert(`${itens.length} depositantes cadastrados.`);
+}
+
+async function addServicosEmMassa(){
+const itens=document.getElementById('servicos-massa').value.trim().split(/\r?\n/).map(nome=>({nome:nome.trim(),ativo:true})).filter(x=>x.nome);
+const {error}=await supabaseClient.from('atividades_cadastro').upsert(itens,{onConflict:'nome'});
+if(error)return alert(error.message);
+alert(`${itens.length} serviços cadastrados.`);
+}
+
+function abrirTabela(titulo,colunas,linhas){
+const html=`<html><head><title>${titulo}</title><style>body{font-family:Arial;background:#0f172a;color:white;padding:24px}h1{color:#38bdf8}table{width:100%;border-collapse:collapse;background:#1e293b}td,th{padding:10px;border-bottom:1px solid #334155}th{color:#38bdf8}</style></head><body><h1>${titulo}</h1><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhas.map(l=>`<tr>${l.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
+const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+async function abrirPaginaUsuarios(){const {data}=await supabaseClient.from('usuarios_sistema').select('nome,usuario,tipo,ativo').order('nome');abrirTabela('Usuários Cadastrados',['Nome','Login','Tipo','Status'],data.map(x=>[x.nome,x.usuario,x.tipo,x.ativo?'Ativo':'Inativo']));}
+async function abrirPaginaDepositantes(){const {data}=await supabaseClient.from('depositantes').select('nome,ativo').order('nome');abrirTabela('Depositantes Cadastrados',['Nome','Status'],data.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));}
+async function abrirPaginaServicos(){const {data}=await supabaseClient.from('atividades_cadastro').select('nome,ativo').order('nome');abrirTabela('Serviços Cadastrados',['Nome','Status'],data.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));}
+</script>
+</body>
+</html>

@@ -1,1300 +1,318 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreador de Atividades Pro</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #38bdf8;
-            --primary-hover: #0ea5e9;
-            --success: #22c55e;
-            --success-hover: #16a34a;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --text: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border: #334155;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            margin: 0;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 450px;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 1.6rem;
-            color: var(--primary);
-            margin-bottom: 4px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            margin-bottom: 24px;
-            border: 1px solid var(--border);
-        }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        select, input[type="text"], input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background-color: #0f172a;
-            color: var(--text);
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .status-panel {
-            background-color: #0f172a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            border: 1px dashed var(--border);
-            text-align: center;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .status-free { background-color: #334155; color: #cbd5e1; }
-        .status-running { background-color: #1e3a8a; color: #93c5fd; }
-
-        .btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-start { background-color: var(--success); }
-        .btn-start:hover:not(:disabled) { background-color: var(--success-hover); }
-
-        .btn-end { background-color: var(--danger); }
-        .btn-end:hover:not(:disabled) { background-color: var(--danger-hover); }
-
-        .btn-primary { background-color: var(--primary); color: #0f172a; margin-bottom: 12px; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-
-        .btn-test { background-color: #475569; color: #fff; font-size: 0.85rem; padding: 10px; width: 100%; }
-
-        button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .history-section { width: 100%; }
-
-        .history-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .history-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .activity-item {
-            background-color: var(--card-bg);
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            position: relative;
-        }
-
-        .activity-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            padding-right: 85px;
-        }
-
-        .activity-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text);
-        }
-
-        .badges-container {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            align-items: flex-end;
-        }
-
-        .user-badge {
-            background-color: #334155;
-            color: #e2e8f0;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-        }
-
-        .depositor-badge {
-            background-color: #1e3a8a;
-            color: #93c5fd;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            font-weight: 600;
-        }
-
-        .time-row {
-            display: flex;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .time-label {
-            width: 60px;
-            font-weight: 600;
-        }
-
-        .duration-box {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid var(--border);
-            font-size: 0.85rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .btn-delete-single {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            width: auto;
-            border-radius: 6px;
-        }
-        
-        .btn-delete-single:hover {
-            background-color: var(--danger);
-            color: #fff;
-        }
-
-        .clear-btn {
-            background-color: transparent;
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            padding: 8px 12px;
-            font-size: 0.8rem;
-            width: auto;
-            border-radius: 6px;
-        }
-        
-        .clear-btn:hover { background-color: rgba(239, 68, 68, 0.1); }
-
-        .empty-state {
-            text-align: center;
-            color: var(--text-secondary);
-            padding: 32px 16px;
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            border: 1px dashed var(--border);
-        }
-
-        .error-message {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 8px;
-            text-align: center;
-            display: none;
-        }
-        
-        .logout-link {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreador de Atividades Pro</title>
+<style>
+:root{--bg-color:#0f172a;--card-bg:#1e293b;--primary:#38bdf8;--primary-hover:#0ea5e9;--success:#22c55e;--success-hover:#16a34a;--danger:#ef4444;--danger-hover:#dc2626;--text:#f8fafc;--text-secondary:#94a3b8;--border:#334155}
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:var(--bg-color);color:var(--text);margin:0;padding:16px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.container{width:100%;max-width:450px}
+h1{text-align:center;font-size:1.6rem;color:var(--primary);margin-bottom:4px;font-weight:700}
+.subtitle{text-align:center;font-size:.85rem;color:var(--text-secondary);margin-bottom:24px}
+.card{background-color:var(--card-bg);padding:20px;border-radius:16px;box-shadow:0 10px 15px -3px rgba(0,0,0,.3);margin-bottom:24px;border:1px solid var(--border)}
+.input-group{margin-bottom:16px}
+label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
+select,input[type="text"],input[type="password"]{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background-color:#0f172a;color:var(--text);font-size:1rem;transition:border-color .2s}
+select:focus,input:focus{outline:none;border-color:var(--primary)}
+.status-panel{background-color:#0f172a;padding:12px;border-radius:8px;margin-bottom:16px;border:1px dashed var(--border);text-align:center}
+.status-badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:.75rem;font-weight:bold;text-transform:uppercase}
+.status-free{background-color:#334155;color:#cbd5e1}
+.status-running{background-color:#1e3a8a;color:#93c5fd}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+button{width:100%;padding:14px;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:bold;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-start{background-color:var(--success)}
+.btn-start:hover:not(:disabled){background-color:var(--success-hover)}
+.btn-end{background-color:var(--danger)}
+.btn-end:hover:not(:disabled){background-color:var(--danger-hover)}
+.btn-primary{background-color:var(--primary);color:#0f172a;margin-bottom:12px}
+.btn-primary:hover{background-color:var(--primary-hover)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.error-message{color:var(--danger);font-size:.85rem;margin-top:8px;text-align:center;display:none}
+.logout-link{text-align:center;margin-top:16px;font-size:.85rem;color:var(--text-secondary);cursor:pointer;text-decoration:underline}
+</style>
 </head>
 <body>
 
-    <div class="container" id="login-screen">
-        <h1>Acesso Restrito</h1>
-        <div class="subtitle">Faça login para gerenciar as atividades</div>
-        <div class="card">
-            <div class="input-group">
-                <label for="login-username">Usuário</label>
-                <input type="text" id="login-username" placeholder="Digite o usuário" value="admin">
+<div class="container" id="login-screen">
+    <h1>Acesso Restrito</h1>
+    <div class="subtitle">Faça login para acessar o sistema</div>
+    <div class="card">
+        <div class="input-group">
+            <label for="login-username">Usuário</label>
+            <input type="text" id="login-username" placeholder="Digite o usuário">
+        </div>
+        <div class="input-group">
+            <label for="login-password">Senha</label>
+            <input type="password" id="login-password" placeholder="Digite a senha">
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">🔓 Entrar</button>
+        <div class="error-message" id="login-error">Usuário ou senha incorretos!</div>
+    </div>
+</div>
+
+<div class="container" id="app-screen" style="display:none;">
+    <h1 id="app-title">Registro de Atividade</h1>
+    <div class="subtitle" id="app-subtitle">Selecione os dados cadastrados e registre o tempo</div>
+
+    <div class="card" id="tracking-card">
+        <div class="input-group">
+            <label for="user-name">Selecione o Executante</label>
+            <select id="user-name"></select>
+        </div>
+
+        <div class="input-group">
+            <label for="depositor-name">Selecione o Depositante</label>
+            <select id="depositor-name"></select>
+        </div>
+
+        <div class="input-group">
+            <label for="activity-name">Selecione o Serviço</label>
+            <select id="activity-name"></select>
+        </div>
+
+        <div class="status-panel">
+            <div id="status-container">
+                <span class="status-badge status-free">Pronto para iniciar</span>
             </div>
-            <div class="input-group">
-                <label for="login-password">Senha</label>
-                <input type="password" id="login-password" placeholder="Digite a senha" value="123">
+            <div id="live-timer" style="font-size:1.2rem;font-weight:bold;margin-top:8px;color:var(--primary);display:none;">
+                00:00:00
             </div>
-            <button class="btn-primary" onclick="handleLogin()">🔓 Entrar</button>
-            <div class="error-message" id="login-error">Usuário ou senha incorretos!</div>
+        </div>
+
+        <div class="btn-grid">
+            <button class="btn-start" id="btn-start" onclick="startTracking()">▶️ Iniciar</button>
+            <button class="btn-end" id="btn-end" onclick="stopTracking()" disabled>⏹️ Finalizar</button>
         </div>
     </div>
 
-    <div class="container" id="app-screen" style="display: none;">
-
-        <h1 id="app-title">Rastreador de Atividades</h1>
-        <div class="subtitle" id="app-subtitle">Controle de tempo em tempo real</div>
-
-        <div class="card" id="tracking-card">
-            <div class="input-group">
-                <label for="user-name">Selecione o Executante</label>
-                <select id="user-name">
-                    <option value="Alex da Silva Sacavem (26331)">Alex da Silva Sacavem (26331)</option>
-                 
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label for="depositor-name">Selecione o Depositante</label>
-                <select id="depositor-name">
-                    <option value="Husqvarna">Husqvarna</option>
-                    <option value="Tecnoset">Tecnoset</option>
-                 
-                    <option value="Bosch">Bosch</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label for="activity-name">Selecione o Serviço</label>
-                <select id="activity-name">
-                    <option value="RETRABALHO HUSQVARNA">RETRABALHO HUSQVARNA</option>
-                    <option value="JOGAR ENTULHO NA CAÇAMBA">JOGAR ENTULHO NA CAÇAMBA</option>
-                </select>
-            </div>
-
-            <div class="status-panel">
-                <div id="status-container">
-                    <span class="status-badge status-free">Pronto para iniciar</span>
-                </div>
-                <div id="live-timer" style="font-size: 1.2rem; font-weight: bold; margin-top: 8px; color: var(--primary); display: none;">
-                    00:00:00
-                </div>
-            </div>
-
-            <div class="btn-grid">
-                <button class="btn-primary" onclick="abrirPaginaAdminHistorico()">🔐 Área Admin - Histórico</button>
-                <button class="btn-primary" onclick="abrirPaginaAdminCadastros()">⚙️ Área Admin - Cadastros</button>           
-            </div>
-        </div>
-
-        <div id="admin-buttons" style="margin-bottom: 24px; display:none;">
-                <button class="btn-primary" onclick="window.open('admin-historico.html', '_blank')">🔐 Área Admin - Histórico</button>
-                <button class="btn-primary" onclick="window.open('admin-cadastros.html', '_blank')">⚙️ Área Admin - Cadastros</button>  
-        </div>
-
-        <div class="history-section" id="admin-history-section" style="display: none;">
-            <div class="history-header-flex">
-                <div class="history-title">Histórico Admin</div>
-                <button class="clear-btn" id="btn-clear" onclick="clearHistory()" style="display: none;">Limpar Tudo</button>
-            </div>
-            <div id="admin-reports" style="margin-bottom:20px;"></div>
-            <div style="margin-bottom:12px;">
-                <button class="btn-primary" onclick="exportCSV()">📥 Exportar CSV</button>
-            </div>
-            <div id="history-container"></div>
-        </div>
-
-        <div class="card" id="admin-cadastros-section" style="display:none;">
-            <h3 style="margin-top:0;">⚙️ Cadastros Admin</h3>
-            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
-                <h4 style="margin-top:0; color:#38bdf8;">👥 Usuários Cadastrados</h4>
-                <button class="btn-primary" onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
-        </div>
-
-        <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
-            <h4 style="margin-top:0; color:#38bdf8;">📦 Depositantes Cadastrados</h4>
-            <button class="btn-primary" onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
-        </div>
-
-        <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
-            <h4 style="margin-top:0; color:#38bdf8;">🛠️ Serviços Cadastrados</h4>
-            <button class="btn-primary" onclick="abrirPaginaServicos()">Abrir Lista de Serviços</button>
-        </div>
-
-            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
-                <h4 style="margin-top:0; color:#38bdf8;">📥 Cadastro em Massa de Funcionários</h4>
-                <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:12px;">
-                    Cole múltiplos usuários no formato:
-                    <br>
-                    <b>43094_AGRICIO BENICIO SAMPAIO FILHO</b>
-                </p>
-
-                <div class="input-group">
-                    <textarea id="usuarios-massa" placeholder="43094_AGRICIO BENICIO SAMPAIO FILHO&#10;44380_JOÃO PAULO MATOS PEREIRA FORTES" style="width:100%; min-height:220px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#020617; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
-                </div>
-
-                <button class="btn-primary" onclick="addUsuariosEmMassa()">Cadastrar Executantes em Massa</button>
-            </div>
-
-            <hr style="margin:20px 0; border-color:#334155;">
-
-            <h4 style="margin-top:0; color:#38bdf8;">🔐 Cadastrar Admin</h4>
-
-            <div class="input-group">
-                <label>Nome do Admin</label>
-                <input type="text" id="novo-usuario-nome" placeholder="Nome completo">
-            </div>
-
-            <div class="input-group">
-                <label>Login do Admin</label>
-                <input type="text" id="novo-usuario-login" placeholder="Ex: joao">
-            </div>
-
-            <div class="input-group">
-                <label>Senha do Admin</label>
-                <input type="password" id="novo-usuario-senha" placeholder="Senha">
-            </div>
-
-            <button class="btn-primary" onclick="addUsuarioSistema()">Adicionar Admin</button>
-
-            <hr style="margin:20px 0; border-color:#334155;">
-
-            <div class="input-group">
-                <label>Novo Executante</label>
-                <input type="text" id="novo-executante" placeholder="Nome do executante">
-            </div>
-
-            <div class="input-group">
-                <label>Código / Matrícula</label>
-                <input type="text" id="novo-codigo" placeholder="Ex: 26331">
-            </div>
-
-            <button class="btn-primary" onclick="addExecutante()">Adicionar Executante</button>
-
-            <hr style="margin:20px 0; border-color:#334155;">
-
-            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
-                <h4 style="margin-top:0; color:#38bdf8;">📦 Cadastro em Massa de Depositantes</h4>
-                <p style="font-size:0.85rem; color:#94a3b8;">Cole um depositante por linha.</p>
-                <textarea id="depositantes-massa" placeholder="HUSQVARNA&#10;BOSCH&#10;TECNOS" style="width:100%; min-height:140px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#020617; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
-                <button class="btn-primary" onclick="addDepositantesEmMassa()">Cadastrar Depositantes em Massa</button>
-            </div>
-
-            <div class="input-group">
-                <label>Novo Depositante</label>
-                <input type="text" id="novo-depositante" placeholder="Nome do depositante">
-            </div>
-
-            <button class="btn-primary" onclick="addDepositante()">Adicionar Depositante</button>
-
-            <hr style="margin:20px 0; border-color:#334155;">
-
-            <div style="background:#0f172a; padding:14px; border-radius:10px; border:1px solid #334155; margin-bottom:20px;">
-                <h4 style="margin-top:0; color:#38bdf8;">🛠️ Cadastro em Massa de Serviços</h4>
-                <p style="font-size:0.85rem; color:#94a3b8;">Cole um serviço por linha.</p>
-                <textarea id="servicos-massa" placeholder="DESCARTE&#10;RETRABALHO&#10;SEPARAÇÃO" style="width:100%; min-height:140px; padding:12px; border-radius:8px; border:1px solid var(--border); background-color:#020617; color:var(--text); font-size:1rem; resize:vertical;"></textarea>
-                <button class="btn-primary" onclick="addServicosEmMassa()">Cadastrar Serviços em Massa</button>
-            </div>
-
-            <div class="input-group">
-                <label>Novo Serviço</label>
-                <input type="text" id="nova-atividade" placeholder="Nome do serviço">
-            </div>
-
-            <button class="btn-primary" onclick="addAtividadeCadastro()">Adicionar Serviço</button>        </div>
-
-        <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
+    <div id="admin-buttons" style="margin-bottom:24px;display:none;">
+        <button class="btn-primary" onclick="window.open('admin-historico.html','_blank')">🔐 Área Admin - Histórico</button>
+        <button class="btn-primary" onclick="window.open('admin-cadastros.html','_blank')">⚙️ Área Admin - Cadastros</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = "https://pnoabqubkspbhluqdfwb.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        let usuarioLogado = null;
-
-        let currentSession = null;
-        let timerInterval = null;
-        let globalActivities = []; 
-
-        document.addEventListener('DOMContentLoaded', () => {
-            showLoginScreen();
-        });
-
-        function openAdminCadastros() {
-            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
-                alert('Acesso negado.');
-                return;
-            }
-
-            document.getElementById('admin-cadastros-section').style.display = 'block';
-        }
-
-        async function handleLogin() {
-            const userIn = document.getElementById('login-username').value.trim();
-            const passIn = document.getElementById('login-password').value.trim();
-            const errorEl = document.getElementById('login-error');
-
-            const { data, error } = await supabaseClient
-                .from('usuarios_sistema')
-                .select('*')
-                .eq('usuario', userIn)
-                .eq('senha', passIn)
-                .eq('ativo', true)
-                .single();
-
-            if (error || !data) {
-                errorEl.innerText = 'Usuário ou senha incorretos!';
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            usuarioLogado = data;
-            errorEl.style.display = 'none';
-            showAppScreen();
-        }
-
-        function handleLogout() {
-            if(currentSession) {
-                alert('Finalize a atividade em andamento antes de sair!');
-                return;
-            }
-            showLoginScreen();
-        }
-
-        function showLoginScreen() {
-            usuarioLogado = null;
-            document.getElementById('login-screen').style.display = 'block';
-            document.getElementById('app-screen').style.display = 'none';
-            document.getElementById('admin-buttons').style.display = 'none';
-            document.getElementById('admin-history-section').style.display = 'none';
-            document.getElementById('admin-cadastros-section').style.display = 'none';
-        }
-
-        function showAppScreen() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-screen').style.display = 'block';
-
-            const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
-
-            const trackingCard = document.getElementById('tracking-card');
-            const adminButtons = document.getElementById('admin-buttons');
-            const historySection = document.getElementById('admin-history-section');
-            const cadastroSection = document.getElementById('admin-cadastros-section');
-
-            if (isAdmin) {
-                document.getElementById('app-title').innerText = 'Portal Administrativo';
-                document.getElementById('app-subtitle').innerText = 'Gerencie usuários, depositantes, atividades e histórico';
-
-                trackingCard.style.display = 'none';
-                adminButtons.style.display = 'block';
-
-            } else {
-                document.getElementById('app-title').innerText = 'Registro de Atividade';
-                document.getElementById('app-subtitle').innerText = 'Selecione os dados cadastrados e registre o tempo';
-
-                trackingCard.style.display = 'block';
-                adminButtons.style.display = 'none';
-            }
-
-            historySection.style.display = 'none';
-            cadastroSection.style.display = 'none';
-
-            initAppLogic();
-        }
-
-        async function initAppLogic() {
-            const isAdmin = usuarioLogado && usuarioLogado.tipo === 'admin';
-            if (isAdmin) {
-                return;
-            }
-            document.getElementById('user-name').disabled = false;
-            document.getElementById('depositor-name').disabled = false;
-            document.getElementById('activity-name').disabled = false;
-            document.getElementById('btn-start').disabled = false;
-            document.getElementById('btn-end').disabled = true;
-            
-            clearInterval(timerInterval);
-            updateStatusUI(false);
-            await carregarCadastros();
-            await loadActivitiesFromSupabase();
-        }
-           
-        async function loadActivitiesFromSupabase() {
-            const { data, error } = await supabaseClient
-                .from('atividades')
-                .select('*')
-                .eq('visivel', true)
-                .order('id', { ascending: false });
-
-            if (error) {
-                alert('Erro ao carregar atividades do Supabase: ' + error.message);
-                return;
-            }
-
-            globalActivities = data.map(item => ({
-                id: item.id,
-                user: item.usuario,
-                depositor: item.depositante,
-                name: item.atividade,
-                start: formatDateTime(new Date(item.inicio)),
-                end: formatDateTime(new Date(item.fim)),
-                duration: item.duracao,
-                duracao_segundos: item.duracao_segundos || 0
-            }));
-
-            renderReports();
-            renderActivities();
-        }
-
-        function updateStatusUI(isRunning) {
-            const container = document.getElementById('status-container');
-            const timerEl = document.getElementById('live-timer');
-            if (isRunning) {
-                container.innerHTML = '<span class="status-badge status-running">Atividade em andamento...</span>';
-                timerEl.style.display = 'block';
-            } else {
-                container.innerHTML = '<span class="status-badge status-free">Pronto para iniciar</span>';
-                timerEl.style.display = 'none';
-            }
-        }
-
-        function startLiveTimerUpdate(startTime) {
-            const timerEl = document.getElementById('live-timer');
-            clearInterval(timerInterval);
-            
-            function update() {
-                const diff = new Date() - startTime;
-                const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
-                const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                timerEl.innerText = `${hrs}:${mins}:${secs}`;
-            }
-            
-            update();
-            timerInterval = setInterval(update, 1000);
-        }
-
-        function startTracking() {
-            const user = document.getElementById('user-name').value;
-            const depositor = document.getElementById('depositor-name').value;
-            const name = document.getElementById('activity-name').value;
-            const startTime = new Date();
-
-            currentSession = { user, depositor, name, startTime: startTime.toISOString() };
-
-            document.getElementById('user-name').disabled = true;
-            document.getElementById('depositor-name').disabled = true;
-            document.getElementById('activity-name').disabled = true;
-            document.getElementById('btn-start').disabled = true;
-            document.getElementById('btn-end').disabled = false;
-
-            startLiveTimerUpdate(startTime);
-            updateStatusUI(true);
-        }
-
-        async function stopTracking() {
-            if (!currentSession) return;
-
-            clearInterval(timerInterval);
-            const endTime = new Date();
-            const startTime = new Date(currentSession.startTime);
-
-            const diffMs = endTime - startTime;
-            const diffMins = Math.round(diffMs / 60000);
-            let durationText = '';
-
-            if (diffMins < 1) {
-                durationText = `${Math.round(diffMs / 1000)} segundos`;
-            } else if (diffMins < 60) {
-                durationText = `${diffMins} min`;
-            } else {
-                durationText = `${Math.floor(diffMins / 60)}h e ${diffMins % 60}min`;
-            }
-
-            const { error } = await supabaseClient
-                .from('atividades')
-                .insert({
-                    usuario: currentSession.user,
-                    depositante: currentSession.depositor,
-                    atividade: currentSession.name,
-                    inicio: startTime.toISOString(),
-                    fim: endTime.toISOString(),
-                    duracao: durationText,
-                    duracao_segundos: Math.round(diffMs / 1000)
-                });
-
-            if (error) {
-                alert('Erro ao salvar atividade no Supabase: ' + error.message);
-                return;
-            }
-
-            currentSession = null;
-
-            document.getElementById('user-name').disabled = false;
-            document.getElementById('depositor-name').disabled = false;
-            document.getElementById('activity-name').disabled = false;
-            document.getElementById('btn-start').disabled = false;
-            document.getElementById('btn-end').disabled = true;
-
-            updateStatusUI(false);
-            await loadActivitiesFromSupabase();
-
-            alert(`✅ Atividade Concluída!\n\n⏱️ Tempo Total Utilizado: ${durationText}`);
-        }
-
-        function formatDateTime(dateObj) {
-            const date = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
-            const time = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            return `${date} às ${time}`;
-        }
-
-        async function openAdminHistory() {
-            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
-                alert('Acesso negado.');
-                return;
-            }
-
-            document.getElementById('admin-history-section').style.display = 'block';
-            await loadActivitiesFromSupabase();
-        }
-
-        function formatSeconds(seconds) {
-            const hrs = Math.floor(seconds / 3600);
-            const mins = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-
-            return `${hrs}h ${mins}min ${secs}s`;
-        }
-
-        function renderReports() {
-            const reportsDiv = document.getElementById('admin-reports');
-
-            let totalSegundos = 0;
-            const usuarios = {};
-            const depositantes = {};
-
-            globalActivities.forEach(act => {
-                const seg = act.duracao_segundos || 0;
-
-                totalSegundos += seg;
-
-                usuarios[act.user] = (usuarios[act.user] || 0) + seg;
-                depositantes[act.depositor] = (depositantes[act.depositor] || 0) + seg;
-            });
-
-            let usuariosHTML = '';
-            Object.entries(usuarios)
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([nome, seg]) => {
-                    usuariosHTML += `
-                        <div class="time-row">
-                            <div style="font-weight:bold;">👤 ${nome}</div>
-                            <div style="margin-left:auto;">${formatSeconds(seg)}</div>
-                        </div>
-                    `;
-                });
-
-            let depositantesHTML = '';
-            Object.entries(depositantes)
-                .sort((a, b) => b[1] - a[1])
-                .forEach(([nome, seg]) => {
-                    depositantesHTML += `
-                        <div class="time-row">
-                            <div style="font-weight:bold;">📦 ${nome}</div>
-                            <div style="margin-left:auto;">${formatSeconds(seg)}</div>
-                        </div>
-                    `;
-                });
-
-            reportsDiv.innerHTML = `
-                <div class="card">
-                    <h3 style="margin-top:0;">📊 Relatórios</h3>
-
-                    <div class="time-row">
-                        <div style="font-weight:bold;">Total de atividades</div>
-                        <div style="margin-left:auto;">${globalActivities.length}</div>
-                    </div>
-
-                    <div class="time-row" style="margin-bottom:16px;">
-                        <div style="font-weight:bold;">Tempo total</div>
-                        <div style="margin-left:auto;">${formatSeconds(totalSegundos)}</div>
-                    </div>
-
-                    <hr style="margin:16px 0; border-color:#334155;">
-
-                    <h4>🏆 Ranking por Usuário</h4>
-                    ${usuariosHTML}
-
-                    <hr style="margin:16px 0; border-color:#334155;">
-
-                    <h4>📦 Ranking por Depositante</h4>
-                    ${depositantesHTML}
-                </div>
-            `;
-        }
-        
-        function renderActivities() {
-            const container = document.getElementById('history-container');
-            const clearBtn = document.getElementById('btn-clear');
-            container.innerHTML = '';
-
-            if (globalActivities.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p style="margin:0;">Nenhuma atividade concluída ainda.</p></div>';
-                clearBtn.style.display = 'none';
-                return;
-            }
-
-            clearBtn.style.display = 'block';
-
-            globalActivities.forEach(act => {
-                const div = document.createElement('div');
-                div.className = 'activity-item';
-                div.innerHTML = `
-                    <button class="btn-delete-single" onclick="deleteSingleItem(${act.id})">❌ Apagar</button>
-                    <div class="activity-header">
-                        <div class="activity-name">${act.name}</div>
-                        <div class="badges-container">
-                            <div class="user-badge">👤 ${act.user.split(' ')[0]}</div>
-                            <div class="depositor-badge">📦 ${act.depositor}</div>
-                        </div>
-                    </div>
-                    <div class="time-row"><div class="time-label">Início:</div><div>${act.start}</div></div>
-                    <div class="time-row"><div class="time-label">Fim:</div><div>${act.end}</div></div>
-                    <div class="duration-box">⏱️ Tempo total: ${act.duration}</div>
-                `;
-                container.appendChild(div);
-            });
-        }
-        async function deleteSingleItem(id) {
-            if (!confirm('Deseja ocultar este registro do histórico? Ele continuará salvo no banco.')) {
-                return;
-            }
-
-            const { error } = await supabaseClient
-                .from('atividades')
-                .update({ visivel: false })
-                .eq('id', id);
-
-            if (error) {
-                alert('Erro ao ocultar registro: ' + error.message);
-                return;
-            }
-
-            await loadActivitiesFromSupabase();
-        }
-
-        function exportCSV() {
-            let csv = 'Usuario,Depositante,Atividade,Inicio,Fim,Duracao\n';
-
-            globalActivities.forEach(act => {
-                csv += `"${act.user}","${act.depositor}","${act.name}","${act.start}","${act.end}","${act.duration}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'relatorio_atividades.csv';
-            link.click();
-        }
-
-        async function clearHistory() {
-            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
-                alert('Acesso negado.');
-                return;
-            }
-
-            if (!confirm('Deseja ocultar todo o histórico?')) return;
-
-            const { error } = await supabaseClient
-                .from('atividades')
-                .update({ visivel: false })
-                .eq('visivel', true);
-
-            if (error) {
-                alert('Erro ao ocultar histórico: ' + error.message);
-                return;
-            }
-
-            await loadActivitiesFromSupabase();
-            alert('Histórico ocultado da tela.');
-        }
-
-        async function carregarCadastros() {
-            const { data: executantes } = await supabaseClient.from('executantes').select('*').eq('ativo', true).order('nome');
-            const { data: depositantes } = await supabaseClient.from('depositantes').select('*').eq('ativo', true).order('nome');
-            const { data: atividades } = await supabaseClient.from('atividades_cadastro').select('*').eq('ativo', true).order('nome');
-
-            const userSelect = document.getElementById('user-name');
-            const depSelect = document.getElementById('depositor-name');
-            const ativSelect = document.getElementById('activity-name');
-
-            userSelect.innerHTML = '';
-            depSelect.innerHTML = '';
-            ativSelect.innerHTML = '';
-
-            executantes.forEach(e => {
-                const texto = e.codigo ? `${e.nome} (${e.codigo})` : e.nome;
-                userSelect.innerHTML += `<option value="${texto}">${texto}</option>`;
-            });
-
-            depositantes.forEach(d => {
-                depSelect.innerHTML += `<option value="${d.nome}">${d.nome}</option>`;
-            });
-
-            atividades.forEach(a => {
-                ativSelect.innerHTML += `<option value="${a.nome}">${a.nome}</option>`;
-            });
-        }
-
-        async function addExecutante() {
-            const nome = document.getElementById('novo-executante').value.trim();
-            const codigo = document.getElementById('novo-codigo').value.trim();
-
-            if (!nome || !codigo) {
-                alert('Digite o nome e a matrícula do executante.');
-                return;
-            }
-
-            const textoExecutante = `${nome} (${codigo})`;
-
-            const { error: erroExecutante } = await supabaseClient
-                .from('executantes')
-                .insert({ nome, codigo });
-
-            if (erroExecutante) {
-                alert('Erro ao cadastrar executante: ' + erroExecutante.message);
-                return;
-            }
-
-            const { error: erroUsuario } = await supabaseClient
-                .from('usuarios_sistema')
-                .upsert({
-                    nome: nome,
-                    usuario: codigo,
-                    senha: codigo,
-                    tipo: 'funcionario',
-                    ativo: true
-                }, { onConflict: 'usuario' });
-
-            if (erroUsuario) {
-                alert('Executante cadastrado, mas erro ao criar login: ' + erroUsuario.message);
-                return;
-            }
-
-            document.getElementById('novo-executante').value = '';
-            document.getElementById('novo-codigo').value = '';
-
-            await carregarCadastros();
-
-            alert(`Executante cadastrado!\n\nLogin: ${codigo}\nSenha: ${codigo}`);
-        }
-        async function addDepositante() {
-            const nome = document.getElementById('novo-depositante').value.trim();
-
-            if (!nome) return alert('Digite o nome do depositante.');
-
-            const { error } = await supabaseClient.from('depositantes').insert({ nome });
-
-            if (error) return alert('Erro: ' + error.message);
-
-            document.getElementById('novo-depositante').value = '';
-            await carregarCadastros();
-            alert('Depositante cadastrado!');
-        }
-
-        async function addAtividadeCadastro() {
-            const nome = document.getElementById('nova-atividade').value.trim();
-
-            if (!nome) return alert('Digite o nome da atividade.');
-
-            const { error } = await supabaseClient.from('atividades_cadastro').insert({ nome });
-
-            if (error) return alert('Erro: ' + error.message);
-
-            document.getElementById('nova-atividade').value = '';
-            await carregarCadastros();
-            alert('Atividade cadastrada!');
-        }
-
-        
-        async function addUsuariosEmMassa() {
-            const texto = document.getElementById('usuarios-massa').value.trim();
-
-            if (!texto) {
-                alert('Cole a lista de usuários.');
-                return;
-            }
-
-            const linhas = texto.split(/\r?\n/);
-            const usuarios = [];
-            const linhasInvalidas = [];
-
-            linhas.forEach((linha, index) => {
-                const valor = linha.trim();
-
-                if (!valor) return;
-
-                const partes = valor.split('_');
-                const matricula = partes[0] ? partes[0].trim() : '';
-                const nome = partes.slice(1).join('_').trim();
-
-                if (!matricula || !nome) {
-                    linhasInvalidas.push(index + 1);
-                    return;
-                }
-
-                usuarios.push({
-                    nome: nome,
-                    usuario: matricula,
-                    senha: matricula,
-                    tipo: 'funcionario'
-                });
-            });
-
-            if (linhasInvalidas.length > 0) {
-                alert('Linhas inválidas: ' + linhasInvalidas.join(', '));
-                return;
-            }
-
-            if (usuarios.length === 0) {
-                alert('Nenhum usuário válido encontrado.');
-                return;
-            }
-
-            const confirmar = confirm(`Deseja cadastrar ${usuarios.length} funcionários?`);
-
-            if (!confirmar) return;
-
-            const { error } = await supabaseClient
-                .from('usuarios_sistema')
-                .upsert(usuarios, { onConflict: 'usuario' });
-
-            if (error) {
-                alert('Erro ao cadastrar usuários em massa: ' + error.message);
-                return;
-            }
-
-            document.getElementById('usuarios-massa').value = '';
-
-            alert(`${usuarios.length} funcionários cadastrados/atualizados com sucesso!`);
-        }
-
-        
-        async function abrirPaginaUsuarios() {
-            const { data, error } = await supabaseClient
-                .from('usuarios_sistema')
-                .select('nome, usuario, tipo, ativo')
-                .order('nome');
-
-            if (error) {
-                alert('Erro ao carregar usuários: ' + error.message);
-                return;
-            }
-
-            const linhas = data.map(u => `
-                <tr>
-                    <td>${u.nome}</td>
-                    <td>${u.usuario}</td>
-                    <td>${u.tipo}</td>
-                    <td>${u.ativo ? 'Ativo' : 'Inativo'}</td>
-                </tr>
-            `).join('');
-
-            const html = `
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Usuários Cadastrados</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            background:#0f172a;
-                            color:#f8fafc;
-                            padding:24px;
-                        }
-                        h1 {
-                            color:#38bdf8;
-                            text-align:center;
-                        }
-                        table {
-                            width:100%;
-                            border-collapse:collapse;
-                            background:#1e293b;
-                            border-radius:12px;
-                            overflow:hidden;
-                        }
-                        th, td {
-                            padding:12px;
-                            border-bottom:1px solid #334155;
-                            text-align:left;
-                        }
-                        th {
-                            background:#020617;
-                            color:#38bdf8;
-                        }
-                        tr:hover {
-                            background:#334155;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Usuários Cadastrados</h1>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Login/Matrícula</th>
-                                <th>Tipo</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${linhas}
-                        </tbody>
-                    </table>
-                </body>
-                </html>
-            `;
-
-            const novaJanela = window.open('', '_blank');
-            novaJanela.document.write(html);
-            novaJanela.document.close();
-        }
-
-        async function addDepositantesEmMassa() {
-            const texto = document.getElementById('depositantes-massa').value.trim();
-            if (!texto) return alert('Cole a lista de depositantes.');
-
-            const depositantes = texto.split(/\r?\n/)
-                .map(linha => linha.trim())
-                .filter(nome => nome)
-                .map(nome => ({ nome, ativo: true }));
-
-            if (depositantes.length === 0) return alert('Nenhum depositante válido encontrado.');
-
-            const { error } = await supabaseClient
-                .from('depositantes')
-                .upsert(depositantes, { onConflict: 'nome' });
-
-            if (error) return alert('Erro ao cadastrar depositantes: ' + error.message);
-
-            document.getElementById('depositantes-massa').value = '';
-            await carregarCadastros();
-            alert(`${depositantes.length} depositantes cadastrados/atualizados!`);
-        }
-
-        async function addServicosEmMassa() {
-            const texto = document.getElementById('servicos-massa').value.trim();
-            if (!texto) return alert('Cole a lista de serviços.');
-
-            const servicos = texto.split(/\r?\n/)
-                .map(linha => linha.trim())
-                .filter(nome => nome)
-                .map(nome => ({ nome, ativo: true }));
-
-            if (servicos.length === 0) return alert('Nenhum serviço válido encontrado.');
-
-            const { error } = await supabaseClient
-                .from('atividades_cadastro')
-                .upsert(servicos, { onConflict: 'nome' });
-
-            if (error) return alert('Erro ao cadastrar serviços: ' + error.message);
-
-            document.getElementById('servicos-massa').value = '';
-            await carregarCadastros();
-            alert(`${servicos.length} serviços cadastrados/atualizados!`);
-        }
-
-        async function abrirPaginaDepositantes() {
-            const { data, error } = await supabaseClient
-                .from('depositantes')
-                .select('nome, ativo')
-                .order('nome');
-
-            if (error) {
-                alert('Erro ao carregar depositantes: ' + error.message);
-                return;
-            }
-
-            abrirTabelaNovaPagina('Depositantes Cadastrados', ['Nome', 'Status'], data.map(d => [
-                d.nome,
-                d.ativo ? 'Ativo' : 'Inativo'
-            ]));
-        }
-
-        async function abrirPaginaServicos() {
-            const { data, error } = await supabaseClient
-                .from('atividades_cadastro')
-                .select('nome, ativo')
-                .order('nome');
-
-            if (error) {
-                alert('Erro ao carregar serviços: ' + error.message);
-                return;
-            }
-
-            abrirTabelaNovaPagina('Serviços Cadastrados', ['Nome', 'Status'], data.map(s => [
-                s.nome,
-                s.ativo ? 'Ativo' : 'Inativo'
-            ]));
-        }
-
-        function abrirTabelaNovaPagina(titulo, colunas, linhas) {
-            const ths = colunas.map(c => `<th>${c}</th>`).join('');
-            const trs = linhas.map(linha => `
-                <tr>${linha.map(valor => `<td>${valor}</td>`).join('')}</tr>
-            `).join('');
-
-            const html = `
-                <!DOCTYPE html>
-                <html lang="pt-BR">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>${titulo}</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            background:#0f172a;
-                            color:#f8fafc;
-                            padding:24px;
-                        }
-                        h1 {
-                            color:#38bdf8;
-                            text-align:center;
-                        }
-                        table {
-                            width:100%;
-                            border-collapse:collapse;
-                            background:#1e293b;
-                            border-radius:12px;
-                            overflow:hidden;
-                        }
-                        th, td {
-                            padding:12px;
-                            border-bottom:1px solid #334155;
-                            text-align:left;
-                        }
-                        th {
-                            background:#020617;
-                            color:#38bdf8;
-                        }
-                        tr:hover {
-                            background:#334155;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>${titulo}</h1>
-                    <table>
-                        <thead><tr>${ths}</tr></thead>
-                        <tbody>${trs}</tbody>
-                    </table>
-                </body>
-                </html>
-            `;
-
-            const novaJanela = window.open('', '_blank');
-            novaJanela.document.write(html);
-            novaJanela.document.close();
-        }
-
-        function abrirPaginaAdminHistorico() {
-            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
-                alert('Acesso negado.');
-                return;
-            }
-
-            openAdminHistory();
-        }
-
-        function abrirPaginaAdminCadastros() {
-            if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
-                alert('Acesso negado.');
-                return;
-            }
-
-            openAdminCadastros();
-        }
-
-    </script>
+    <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
+const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let usuarioLogado=null;
+let currentSession=null;
+let timerInterval=null;
+
+document.addEventListener('DOMContentLoaded',()=>{showLoginScreen();});
+
+async function handleLogin(){
+    const userIn=document.getElementById('login-username').value.trim();
+    const passIn=document.getElementById('login-password').value.trim();
+    const errorEl=document.getElementById('login-error');
+
+    const {data,error}=await supabaseClient
+        .from('usuarios_sistema')
+        .select('*')
+        .eq('usuario',userIn)
+        .eq('senha',passIn)
+        .eq('ativo',true)
+        .single();
+
+    if(error||!data){
+        errorEl.innerText='Usuário ou senha incorretos!';
+        errorEl.style.display='block';
+        return;
+    }
+
+    usuarioLogado=data;
+    errorEl.style.display='none';
+    showAppScreen();
+}
+
+function handleLogout(){
+    if(currentSession){
+        alert('Finalize a atividade em andamento antes de sair!');
+        return;
+    }
+    showLoginScreen();
+}
+
+function showLoginScreen(){
+    usuarioLogado=null;
+    currentSession=null;
+    clearInterval(timerInterval);
+    document.getElementById('login-screen').style.display='block';
+    document.getElementById('app-screen').style.display='none';
+    document.getElementById('admin-buttons').style.display='none';
+    document.getElementById('tracking-card').style.display='block';
+}
+
+function showAppScreen(){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app-screen').style.display='block';
+
+    const isAdmin=usuarioLogado&&usuarioLogado.tipo==='admin';
+
+    if(isAdmin){
+        document.getElementById('app-title').innerText='Portal Administrativo';
+        document.getElementById('app-subtitle').innerText='Acesse histórico, relatórios e cadastros';
+        document.getElementById('tracking-card').style.display='none';
+        document.getElementById('admin-buttons').style.display='block';
+    }else{
+        document.getElementById('app-title').innerText='Registro de Atividade';
+        document.getElementById('app-subtitle').innerText='Selecione os dados cadastrados e registre o tempo';
+        document.getElementById('tracking-card').style.display='block';
+        document.getElementById('admin-buttons').style.display='none';
+        initAppLogic();
+    }
+}
+
+async function initAppLogic(){
+    document.getElementById('user-name').disabled=false;
+    document.getElementById('depositor-name').disabled=false;
+    document.getElementById('activity-name').disabled=false;
+    document.getElementById('btn-start').disabled=false;
+    document.getElementById('btn-end').disabled=true;
+
+    clearInterval(timerInterval);
+    updateStatusUI(false);
+    await carregarCadastros();
+}
+
+async function carregarCadastros(){
+    const {data:executantes,error:erroExec}=await supabaseClient.from('executantes').select('*').eq('ativo',true).order('nome');
+    const {data:depositantes,error:erroDep}=await supabaseClient.from('depositantes').select('*').eq('ativo',true).order('nome');
+    const {data:servicos,error:erroServ}=await supabaseClient.from('atividades_cadastro').select('*').eq('ativo',true).order('nome');
+
+    if(erroExec){alert('Erro ao carregar executantes: '+erroExec.message);return;}
+    if(erroDep){alert('Erro ao carregar depositantes: '+erroDep.message);return;}
+    if(erroServ){alert('Erro ao carregar serviços: '+erroServ.message);return;}
+
+    const userSelect=document.getElementById('user-name');
+    const depSelect=document.getElementById('depositor-name');
+    const ativSelect=document.getElementById('activity-name');
+
+    userSelect.innerHTML='';
+    depSelect.innerHTML='';
+    ativSelect.innerHTML='';
+
+    executantes.forEach(e=>{
+        const texto=e.codigo?`${e.nome} (${e.codigo})`:e.nome;
+        userSelect.innerHTML+=`<option value="${texto}">${texto}</option>`;
+    });
+
+    depositantes.forEach(d=>{
+        depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
+    });
+
+    servicos.forEach(s=>{
+        ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
+    });
+}
+
+function updateStatusUI(isRunning){
+    const container=document.getElementById('status-container');
+    const timerEl=document.getElementById('live-timer');
+
+    if(isRunning){
+        container.innerHTML='<span class="status-badge status-running">Atividade em andamento...</span>';
+        timerEl.style.display='block';
+    }else{
+        container.innerHTML='<span class="status-badge status-free">Pronto para iniciar</span>';
+        timerEl.style.display='none';
+        timerEl.innerText='00:00:00';
+    }
+}
+
+function startLiveTimerUpdate(startTime){
+    const timerEl=document.getElementById('live-timer');
+    clearInterval(timerInterval);
+
+    function update(){
+        const diff=new Date()-startTime;
+        const hrs=Math.floor(diff/3600000).toString().padStart(2,'0');
+        const mins=Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+        const secs=Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+        timerEl.innerText=`${hrs}:${mins}:${secs}`;
+    }
+
+    update();
+    timerInterval=setInterval(update,1000);
+}
+
+function startTracking(){
+    const user=document.getElementById('user-name').value;
+    const depositor=document.getElementById('depositor-name').value;
+    const name=document.getElementById('activity-name').value;
+    const startTime=new Date();
+
+    if(!user||!depositor||!name){
+        alert('Selecione executante, depositante e serviço.');
+        return;
+    }
+
+    currentSession={user,depositor,name,startTime:startTime.toISOString()};
+
+    document.getElementById('user-name').disabled=true;
+    document.getElementById('depositor-name').disabled=true;
+    document.getElementById('activity-name').disabled=true;
+    document.getElementById('btn-start').disabled=true;
+    document.getElementById('btn-end').disabled=false;
+
+    startLiveTimerUpdate(startTime);
+    updateStatusUI(true);
+}
+
+async function stopTracking(){
+    if(!currentSession)return;
+
+    clearInterval(timerInterval);
+
+    const endTime=new Date();
+    const startTime=new Date(currentSession.startTime);
+    const diffMs=endTime-startTime;
+    const diffMins=Math.round(diffMs/60000);
+
+    let durationText='';
+
+    if(diffMins<1){
+        durationText=`${Math.round(diffMs/1000)} segundos`;
+    }else if(diffMins<60){
+        durationText=`${diffMins} min`;
+    }else{
+        durationText=`${Math.floor(diffMins/60)}h e ${diffMins%60}min`;
+    }
+
+    const {error}=await supabaseClient.from('atividades').insert({
+        usuario:currentSession.user,
+        depositante:currentSession.depositor,
+        atividade:currentSession.name,
+        inicio:startTime.toISOString(),
+        fim:endTime.toISOString(),
+        duracao:durationText,
+        duracao_segundos:Math.round(diffMs/1000),
+        visivel:true
+    });
+
+    if(error){
+        alert('Erro ao salvar atividade no Supabase: '+error.message);
+        return;
+    }
+
+    currentSession=null;
+
+    document.getElementById('user-name').disabled=false;
+    document.getElementById('depositor-name').disabled=false;
+    document.getElementById('activity-name').disabled=false;
+    document.getElementById('btn-start').disabled=false;
+    document.getElementById('btn-end').disabled=true;
+
+    updateStatusUI(false);
+
+    alert(`✅ Serviço concluído!\n\n⏱️ Tempo Total Utilizado: ${durationText}`);
+}
+</script>
 </body>
 </html>
