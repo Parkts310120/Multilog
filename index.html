@@ -1040,33 +1040,7 @@
             alert(`${usuarios.length} funcionários cadastrados/atualizados com sucesso!`);
         }
 
-        async function listarUsuariosSistema() {
-            const lista = document.getElementById('lista-usuarios-sistema');
 
-            const { data, error } = await supabaseClient
-                .from('usuarios_sistema')
-                .select('id, nome, usuario, tipo, ativo')
-                .order('nome');
-
-            if (error) {
-                alert('Erro ao carregar usuários: ' + error.message);
-                return;
-            }
-
-            if (!data || data.length === 0) {
-                lista.innerHTML = '<div class="empty-state">Nenhum usuário cadastrado.</div>';
-                return;
-            }
-
-            lista.innerHTML = data.map(u => `
-                <div class="activity-item">
-                    <div class="activity-name">${u.nome}</div>
-                    <div class="time-row"><div class="time-label">Login:</div><div>${u.usuario}</div></div>
-                    <div class="time-row"><div class="time-label">Tipo:</div><div>${u.tipo}</div></div>
-                    <div class="time-row"><div class="time-label">Status:</div><div>${u.ativo ? 'Ativo' : 'Inativo'}</div></div>
-                </div>
-            `).join('');
-        }
         async function abrirPaginaUsuarios() {
             const { data, error } = await supabaseClient
                 .from('usuarios_sistema')
