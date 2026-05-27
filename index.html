@@ -459,6 +459,7 @@
         });
 
         function openAdminCadastros() {
+
             if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
                 alert('Acesso negado.');
                 return;
@@ -657,6 +658,7 @@
         }
 
         async function openAdminHistory() {
+
             if (!usuarioLogado || usuarioLogado.tipo !== 'admin') {
                 alert('Acesso negado.');
                 return;
