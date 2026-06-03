@@ -1,3 +1,6 @@
+## EM CASO DE PERDA
+git checkout backup-base-antes-enterprise
+
 # TRANSIÇÃO PARA PRODUÇÃO (IMPORTANTE)
 
 ## Situação atual (Desenvolvimento)
