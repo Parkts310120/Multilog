@@ -1,1 +1,140 @@
-readme
+# TRANSIÇÃO PARA PRODUÇÃO (IMPORTANTE)
+
+## Situação atual (Desenvolvimento)
+
+Frontend:
+
+* GitHub Codespaces
+* Porta 5173
+
+Backend:
+
+* Node.js / Express
+* Porta 3000
+
+Banco:
+
+* Supabase PostgreSQL
+
+API_BASE_URL atual:
+https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev
+
+OBS:
+Essa URL funciona APENAS dentro do Codespaces.
+NÃO usar em produção.
+
+---
+
+## Situação futura (Produção)
+
+Frontend:
+https://sistema.multilog.com.br
+
+Backend:
+https://api.multilog.com.br
+
+Banco:
+PostgreSQL
+(Supabase inicialmente, AWS RDS futuramente)
+
+---
+
+## Alterações necessárias antes da implantação
+
+### 1. Remover URLs fixas
+
+Trocar:
+
+const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
+
+Por variável de ambiente.
+
+Exemplo:
+
+VITE_API_BASE_URL=https://api.multilog.com.br
+
+---
+
+### 2. Backend
+
+Hospedar API em:
+
+* Render
+  ou
+* Railway
+  ou
+* AWS
+
+Preferência futura:
+AWS
+
+---
+
+### 3. Banco
+
+Fase 1:
+Supabase PostgreSQL
+
+Fase 2:
+AWS RDS PostgreSQL
+
+---
+
+### 4. Segurança
+
+Implementar:
+
+* JWT obrigatório
+* Senhas com bcrypt
+* Logs de auditoria
+* Controle de perfis
+* HTTPS
+* Backup automático
+
+---
+
+### 5. Integrações futuras
+
+* Power BI
+* JDE
+* Korber
+* APIs externas
+* CSV/XML
+* Webhooks
+
+---
+
+## Regra importante
+
+O Frontend nunca deve acessar o banco diretamente.
+
+Arquitetura correta:
+
+Frontend
+↓
+API Node.js
+↓
+PostgreSQL
+
+Mesmo após migrar para AWS.
+
+---
+
+## Objetivo final
+
+Arquitetura enterprise:
+
+Usuário
+↓
+Frontend (Vite)
+↓
+API Node.js
+↓
+PostgreSQL (AWS RDS)
+↓
+Power BI
+↓
+Integrações ERP/WMS
+
+Sem dependência do GitHub Codespaces.
+

@@ -1,0 +1,13 @@
+{
+  "forwardPorts": [3000, 5173],
+  "portsAttributes": {
+    "3000": {
+      "label": "Multilog API",
+      "visibility": "public"
+    },
+    "5173": {
+      "label": "Multilog Frontend",
+      "visibility": "public"
+    }
+  }
+}

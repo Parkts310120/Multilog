@@ -97,6 +97,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
 const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
 const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -112,23 +113,33 @@ async function handleLogin(){
     const passIn=document.getElementById('login-password').value.trim();
     const errorEl=document.getElementById('login-error');
 
-    const {data,error}=await supabaseClient
-        .from('usuarios_sistema')
-        .select('*')
-        .eq('usuario',userIn)
-        .eq('senha',passIn)
-        .eq('ativo',true)
-        .single();
+    try{
+        const resposta=await fetch(`${API_BASE_URL}/api/login`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({usuario:userIn,senha:passIn})
+        });
 
-    if(error||!data){
-        errorEl.innerText='Usuário ou senha incorretos!';
+        const resultado=await resposta.json();
+
+        if(!resposta.ok||!resultado.sucesso){
+            errorEl.innerText=resultado.mensagem||'Usuário ou senha incorretos!';
+            errorEl.style.display='block';
+            return;
+        }
+
+        localStorage.setItem('multilog_token',resultado.token);
+        localStorage.setItem('multilog_usuario',JSON.stringify(resultado.usuario));
+
+        usuarioLogado=resultado.usuario;
+        errorEl.style.display='none';
+        showAppScreen();
+
+    }catch(erro){
+        errorEl.innerText='Erro ao conectar com a API.';
         errorEl.style.display='block';
-        return;
+        console.error(erro);
     }
-
-    usuarioLogado=data;
-    errorEl.style.display='none';
-    showAppScreen();
 }
 
 function handleLogout(){
@@ -182,49 +193,59 @@ async function initAppLogic(){
 }
 
 async function carregarCadastros(){
+    try{
+        const token=localStorage.getItem('multilog_token');
 
-    const {data:depositantes,error:erroDep}=await supabaseClient
-        .from('depositantes')
-        .select('*')
-        .eq('ativo',true)
-        .order('nome');
+        const [respDepositantes,respServicos]=await Promise.all([
+            fetch(`${API_BASE_URL}/api/depositantes`,{
+                headers:{'Authorization':`Bearer ${token}`}
+            }),
+            fetch(`${API_BASE_URL}/api/servicos`,{
+                headers:{'Authorization':`Bearer ${token}`}
+            })
+        ]);
 
-    const {data:servicos,error:erroServ}=await supabaseClient
-        .from('atividades_cadastro')
-        .select('*')
-        .eq('ativo',true)
-        .order('nome');
+        const resultDepositantes=await respDepositantes.json();
+        const resultServicos=await respServicos.json();
 
-    if(erroDep){
-        alert('Erro ao carregar depositantes: '+erroDep.message);
-        return;
-    }
+        if(!respDepositantes.ok||!resultDepositantes.sucesso){
+            alert(resultDepositantes.mensagem||'Erro ao carregar depositantes.');
+            return;
+        }
 
-    if(erroServ){
-        alert('Erro ao carregar serviços: '+erroServ.message);
-        return;
-    }
+        if(!respServicos.ok||!resultServicos.sucesso){
+            alert(resultServicos.mensagem||'Erro ao carregar serviços.');
+            return;
+        }
 
-    const depSelect=document.getElementById('depositor-name');
-    const ativSelect=document.getElementById('activity-name');
+        const depositantes=resultDepositantes.depositantes;
+        const servicos=resultServicos.servicos;
 
-    depSelect.innerHTML='';
-    ativSelect.innerHTML='';
+        const depSelect=document.getElementById('depositor-name');
+        const ativSelect=document.getElementById('activity-name');
 
-    if(!depositantes || depositantes.length===0){
-        depSelect.innerHTML='<option value="">Nenhum depositante cadastrado</option>';
-    }else{
-        depositantes.forEach(d=>{
-            depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
-        });
-    }
+        depSelect.innerHTML='';
+        ativSelect.innerHTML='';
 
-    if(!servicos || servicos.length===0){
-        ativSelect.innerHTML='<option value="">Nenhum serviço cadastrado</option>';
-    }else{
-        servicos.forEach(s=>{
-            ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
-        });
+        if(!depositantes||depositantes.length===0){
+            depSelect.innerHTML='<option value="">Nenhum depositante cadastrado</option>';
+        }else{
+            depositantes.forEach(d=>{
+                depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
+            });
+        }
+
+        if(!servicos||servicos.length===0){
+            ativSelect.innerHTML='<option value="">Nenhum serviço cadastrado</option>';
+        }else{
+            servicos.forEach(s=>{
+                ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
+            });
+        }
+
+    }catch(erro){
+        console.error(erro);
+        alert('Erro ao conectar com a API para carregar cadastros.');
     }
 }
 
@@ -300,19 +321,31 @@ async function stopTracking(){
         durationText=`${Math.floor(diffMins/60)}h e ${diffMins%60}min`;
     }
 
-    const {error}=await supabaseClient.from('atividades').insert({
-        usuario:currentSession.user,
-        depositante:currentSession.depositor,
-        atividade:currentSession.name,
-        inicio:startTime.toISOString(),
-        fim:endTime.toISOString(),
-        duracao:durationText,
-        duracao_segundos:Math.round(diffMs/1000),
-        visivel:true
+    const token=localStorage.getItem('multilog_token');
+
+    const resposta=await fetch(`${API_BASE_URL}/api/atividades`,{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+            'Authorization':`Bearer ${token}`
+        },
+        body:JSON.stringify({
+            usuario:currentSession.user,
+            depositante:currentSession.depositor,
+            atividade:currentSession.name,
+            inicio:startTime.toISOString(),
+            fim:endTime.toISOString(),
+            duracao:durationText,
+            duracao_segundos:Math.round(diffMs/1000)
+        })
     });
 
-    if(error){
-        alert('Erro ao salvar atividade no Supabase: '+error.message);
+    const resultado=await resposta.json();
+
+    console.log('RESPOSTA SALVAR ATIVIDADE:', resposta.status, resultado);
+
+    if(!resposta.ok||!resultado.sucesso){
+        alert('Erro ao salvar atividade: '+(resultado.mensagem||'Erro desconhecido'));
         return;
     }
 

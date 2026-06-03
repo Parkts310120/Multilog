@@ -128,9 +128,7 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
-const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
 
 function mostrarSecao(id){
 document.getElementById('menu-cadastros').style.display='none';
@@ -153,21 +151,47 @@ async function addUsuarioSistema(){
 const nome=document.getElementById('novo-usuario-nome').value.trim();
 const usuario=document.getElementById('novo-usuario-login').value.trim();
 const senha=document.getElementById('novo-usuario-senha').value.trim();
+const token=localStorage.getItem('multilog_token');
+
 if(!nome||!usuario||!senha)return alert('Preencha nome, login e senha.');
-const {error}=await supabaseClient.from('usuarios_sistema').upsert({nome,usuario,senha,tipo:'admin',ativo:true},{onConflict:'usuario'});
-if(error)return alert(error.message);
+
+const resposta=await fetch(`${API_BASE_URL}/api/admin/usuarios`,{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+'Authorization':`Bearer ${token}`
+},
+body:JSON.stringify({nome,usuario,senha})
+});
+
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar admin.');
+
 alert('Admin cadastrado!');
 }
 
 async function addExecutante(){
 const nome=document.getElementById('novo-executante').value.trim();
 const codigo=document.getElementById('novo-codigo').value.trim();
+const token=localStorage.getItem('multilog_token');
+
 if(!nome||!codigo)return alert('Digite nome e matrícula.');
-let e1=await supabaseClient.from('executantes').insert({nome,codigo});
-if(e1.error)return alert(e1.error.message);
-let e2=await supabaseClient.from('usuarios_sistema').upsert({nome,usuario:codigo,senha:codigo,tipo:'funcionario',ativo:true},{onConflict:'usuario'});
-if(e2.error)return alert(e2.error.message);
-alert(`Executante cadastrado!\nLogin: ${codigo}\nSenha: ${codigo}`);
+
+const resposta=await fetch(`${API_BASE_URL}/api/admin/executantes`,{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+'Authorization':`Bearer ${token}`
+},
+body:JSON.stringify({nome,codigo})
+});
+
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar executante.');
+
+alert(resultado.mensagem);
 }
 
 async function addUsuariosEmMassa(){
@@ -183,17 +207,29 @@ alert(`${usuarios.length} funcionários cadastrados.`);
 
 async function addDepositante(){
 const nome=document.getElementById('novo-depositante').value.trim();
+const token=localStorage.getItem('multilog_token');
 if(!nome)return alert('Digite o depositante.');
-const {error}=await supabaseClient.from('depositantes').insert({nome});
-if(error)return alert(error.message);
+const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+body:JSON.stringify({nome})
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar depositante.');
 alert('Depositante cadastrado!');
-}
+}   
 
 async function addAtividadeCadastro(){
 const nome=document.getElementById('nova-atividade').value.trim();
+const token=localStorage.getItem('multilog_token');
 if(!nome)return alert('Digite o serviço.');
-const {error}=await supabaseClient.from('atividades_cadastro').insert({nome});
-if(error)return alert(error.message);
+const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+body:JSON.stringify({nome})
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar serviço.');
 alert('Serviço cadastrado!');
 }
 
@@ -221,9 +257,23 @@ w.document.close();
 }
 
 async function abrirPaginaUsuarios(){
-const {data,error}=await supabaseClient.from('usuarios_sistema').select('nome,usuario,tipo,ativo').order('nome');
-if(error)return alert(error.message);
-abrirTabela('Usuários Cadastrados',['Nome','Login','Tipo','Status'],data.map(x=>[x.nome,x.usuario,x.tipo,x.ativo?'Ativo':'Inativo']));
+const token=localStorage.getItem('multilog_token');
+
+const resposta=await fetch(`${API_BASE_URL}/api/admin/usuarios`,{
+headers:{
+'Authorization':`Bearer ${token}`
+}
+});
+
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar usuários.');
+
+abrirTabela(
+'Usuários Cadastrados',
+['Nome','Login','Tipo','Status'],
+resultado.usuarios.map(x=>[x.nome,x.usuario,x.tipo,x.ativo?'Ativo':'Inativo'])
+);
 }
 
 async function abrirPaginaDepositantes(){

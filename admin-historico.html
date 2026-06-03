@@ -45,18 +45,33 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
-const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
 
 let globalActivities=[];
 
 document.addEventListener('DOMContentLoaded',loadActivitiesFromSupabase);
 
 async function loadActivitiesFromSupabase(){
-const {data,error}=await supabaseClient.from('atividades').select('*').eq('visivel',true).order('id',{ascending:false});
-if(error){alert('Erro ao carregar histórico: '+error.message);return;}
-globalActivities=data.map(item=>({
+const token=localStorage.getItem('multilog_token');
+if(!token){
+alert('Sessão expirada. Faça login novamente.');
+window.location.href='index.html';
+return;
+}
+
+try{
+const resposta=await fetch(`${API_BASE_URL}/api/admin/atividades`,{
+headers:{'Authorization':`Bearer ${token}`}
+});
+
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso){
+alert(resultado.mensagem||'Erro ao carregar histórico.');
+return;
+}
+
+globalActivities=resultado.atividades.map(item=>({
 id:item.id,
 user:item.usuario,
 depositor:item.depositante,
@@ -66,8 +81,14 @@ end:formatDateTime(new Date(item.fim)),
 duration:item.duracao,
 duracao_segundos:item.duracao_segundos||0
 }));
+
 renderReports();
 renderActivities();
+
+}catch(erro){
+console.error(erro);
+alert('Erro ao conectar com a API.');
+}
 }
 
 function formatDateTime(dateObj){
