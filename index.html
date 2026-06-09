@@ -34,8 +34,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 </style>
 </head>
 <body>
-
-<div class="container" id="login-screen">
+    
+<div class="container" id="login-screen" style="display:none;">
     <h1>Acesso Restrito</h1>
     <div class="subtitle">Faça login para acessar o sistema</div>
     <div class="card">
@@ -72,6 +72,21 @@ button:disabled{opacity:.4;cursor:not-allowed}
             <select id="activity-name"></select>
         </div>
 
+        <div class="input-group">
+            <label for="area-name">Selecione a Área</label>
+            <select id="area-name"></select>
+        </div>
+
+        <div class="input-group">
+            <label for="quantidade">Quantidade</label>
+            <input type="number" id="quantidade" min="0" step="1" placeholder="Digite a quantidade produzida">
+        </div>
+
+        <div class="input-group">
+            <label for="unidade">Unidade</label>
+            <input type="text" id="unidade" value="unidade" placeholder="Ex: peça, pallet, caixa">
+        </div>
+
         <div class="status-panel">
             <div id="status-container">
                 <span class="status-badge status-free">Pronto para iniciar</span>
@@ -106,7 +121,17 @@ let usuarioLogado=null;
 let currentSession=null;
 let timerInterval=null;
 
-document.addEventListener('DOMContentLoaded',()=>{showLoginScreen();});
+document.addEventListener('DOMContentLoaded',()=>{
+const usuarioSalvo=localStorage.getItem('multilog_usuario');
+const token=localStorage.getItem('multilog_token');
+
+if(usuarioSalvo&&token){
+usuarioLogado=JSON.parse(usuarioSalvo);
+showAppScreen();
+}else{
+showLoginScreen();
+}
+});
 
 async function handleLogin(){
     const userIn=document.getElementById('login-username').value.trim();
@@ -196,18 +221,15 @@ async function carregarCadastros(){
     try{
         const token=localStorage.getItem('multilog_token');
 
-        const [respDepositantes,respServicos]=await Promise.all([
-            fetch(`${API_BASE_URL}/api/depositantes`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            }),
-            fetch(`${API_BASE_URL}/api/servicos`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            })
+        const [respDepositantes,respServicos,respAreas]=await Promise.all([
+        fetch(`${API_BASE_URL}/api/depositantes`,{headers:{'Authorization':`Bearer ${token}`}}),
+        fetch(`${API_BASE_URL}/api/servicos`,{headers:{'Authorization':`Bearer ${token}`}}),
+        fetch(`${API_BASE_URL}/api/areas`,{headers:{'Authorization':`Bearer ${token}`}})
         ]);
 
         const resultDepositantes=await respDepositantes.json();
         const resultServicos=await respServicos.json();
-
+        const resultAreas=await respAreas.json();
         if(!respDepositantes.ok||!resultDepositantes.sucesso){
             alert(resultDepositantes.mensagem||'Erro ao carregar depositantes.');
             return;

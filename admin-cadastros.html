@@ -26,7 +26,7 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <div class="box">
 <h3>📋 Menu de Cadastros</h3>
 <div class="box" style="margin-bottom:28px;border-color:#475569;">
-<button onclick="history.back()">⬅️ Voltar ao Portal</button>
+<button onclick="voltarPortalAdmin()">⬅️ Voltar ao Portal</button>
 </div>
 
 <div class="box">
@@ -42,11 +42,9 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <div class="card secao-cadastro" id="sec-listas">
 <div class="box">
 <h3>👥 Consultar Listas</h3>
-
 <div class="box" style="margin-bottom:28px;border-color:#475569;">
 <button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
 </div>
-
 <div class="box">
 <button onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
 <button onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
@@ -59,14 +57,11 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <div class="box">
 <h3>👤 Funcionários / Executantes</h3>
 <button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-
 <h4>📥 Cadastro em Massa de Funcionários</h4>
 <p style="color:#94a3b8">Formato: <b>43094_AGRICIO BENICIO SAMPAIO FILHO</b></p>
 <textarea id="usuarios-massa" style="min-height:180px"></textarea>
 <button onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
-
 <hr style="margin:20px 0;border-color:#334155;">
-
 <h4>👤 Cadastrar Executante</h4>
 <label>Nome do Executante</label>
 <input id="novo-executante">
@@ -94,13 +89,10 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <div class="box">
 <h3>📦 Depositantes</h3>
 <button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-
 <h4>📦 Cadastro em Massa de Depositantes</h4>
 <textarea id="depositantes-massa" style="min-height:120px"></textarea>
 <button onclick="addDepositantesEmMassa()">Cadastrar Depositantes em Massa</button>
-
 <hr style="margin:20px 0;border-color:#334155;">
-
 <h4>📦 Novo Depositante</h4>
 <input id="novo-depositante">
 <button onclick="addDepositante()">Adicionar Depositante</button>
@@ -111,39 +103,34 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <div class="box">
 <h3>🛠️ Serviços</h3>
 <button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-
 <h4>🛠️ Cadastro em Massa de Serviços</h4>
 <textarea id="servicos-massa" style="min-height:120px"></textarea>
 <button onclick="addServicosEmMassa()">Cadastrar Serviços em Massa</button>
-
 <hr style="margin:20px 0;border-color:#334155;">
-
 <h4>🛠️ Novo Serviço</h4>
 <input id="nova-atividade">
 <button onclick="addAtividadeCadastro()">Adicionar Serviço</button>
 </div>
 </div>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
 
+function getToken(){
+return localStorage.getItem('multilog_token');
+}
+
 function mostrarSecao(id){
 document.getElementById('menu-cadastros').style.display='none';
-document.querySelectorAll('.secao-cadastro').forEach(secao=>{
-secao.style.display='none';
-});
+document.querySelectorAll('.secao-cadastro').forEach(secao=>secao.style.display='none');
 document.getElementById(id).style.display='block';
 window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function voltarMenuCadastros(){
 document.getElementById('menu-cadastros').style.display='block';
-document.querySelectorAll('.secao-cadastro').forEach(secao=>{
-secao.style.display='none';
-});
+document.querySelectorAll('.secao-cadastro').forEach(secao=>secao.style.display='none');
 window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -151,46 +138,28 @@ async function addUsuarioSistema(){
 const nome=document.getElementById('novo-usuario-nome').value.trim();
 const usuario=document.getElementById('novo-usuario-login').value.trim();
 const senha=document.getElementById('novo-usuario-senha').value.trim();
-const token=localStorage.getItem('multilog_token');
-
 if(!nome||!usuario||!senha)return alert('Preencha nome, login e senha.');
-
 const resposta=await fetch(`${API_BASE_URL}/api/admin/usuarios`,{
 method:'POST',
-headers:{
-'Content-Type':'application/json',
-'Authorization':`Bearer ${token}`
-},
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome,usuario,senha})
 });
-
 const resultado=await resposta.json();
-
 if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar admin.');
-
-alert('Admin cadastrado!');
+alert(resultado.mensagem||'Admin cadastrado!');
 }
 
 async function addExecutante(){
 const nome=document.getElementById('novo-executante').value.trim();
 const codigo=document.getElementById('novo-codigo').value.trim();
-const token=localStorage.getItem('multilog_token');
-
 if(!nome||!codigo)return alert('Digite nome e matrícula.');
-
 const resposta=await fetch(`${API_BASE_URL}/api/admin/executantes`,{
 method:'POST',
-headers:{
-'Content-Type':'application/json',
-'Authorization':`Bearer ${token}`
-},
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome,codigo})
 });
-
 const resultado=await resposta.json();
-
 if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar executante.');
-
 alert(resultado.mensagem);
 }
 
@@ -198,95 +167,147 @@ async function addUsuariosEmMassa(){
 const texto=document.getElementById('usuarios-massa').value.trim();
 if(!texto)return alert('Cole a lista.');
 const usuarios=texto.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
-const p=l.split('_');return{usuario:p[0].trim(),senha:p[0].trim(),nome:p.slice(1).join('_').trim(),tipo:'funcionario',ativo:true};
+const p=l.split('_');
+return{usuario:p[0].trim(),senha:p[0].trim(),nome:p.slice(1).join('_').trim()};
 }).filter(u=>u.usuario&&u.nome);
-const {error}=await supabaseClient.from('usuarios_sistema').upsert(usuarios,{onConflict:'usuario'});
-if(error)return alert(error.message);
-alert(`${usuarios.length} funcionários cadastrados.`);
+const resposta=await fetch(`${API_BASE_URL}/api/admin/executantes/massa`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
+body:JSON.stringify({usuarios})
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar funcionários.');
+alert(resultado.mensagem);
 }
 
 async function addDepositante(){
 const nome=document.getElementById('novo-depositante').value.trim();
-const token=localStorage.getItem('multilog_token');
 if(!nome)return alert('Digite o depositante.');
 const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes`,{
 method:'POST',
-headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome})
 });
 const resultado=await resposta.json();
 if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar depositante.');
-alert('Depositante cadastrado!');
-}   
+alert(resultado.mensagem||'Depositante cadastrado!');
+}
 
 async function addAtividadeCadastro(){
 const nome=document.getElementById('nova-atividade').value.trim();
-const token=localStorage.getItem('multilog_token');
 if(!nome)return alert('Digite o serviço.');
 const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos`,{
 method:'POST',
-headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome})
 });
 const resultado=await resposta.json();
 if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar serviço.');
-alert('Serviço cadastrado!');
+alert(resultado.mensagem||'Serviço cadastrado!');
 }
 
 async function addDepositantesEmMassa(){
-const itens=document.getElementById('depositantes-massa').value.trim().split(/\r?\n/).map(nome=>({nome:nome.trim(),ativo:true})).filter(x=>x.nome);
-if(itens.length===0)return alert('Cole pelo menos um depositante.');
-const {error}=await supabaseClient.from('depositantes').upsert(itens,{onConflict:'nome'});
-if(error)return alert(error.message);
-alert(`${itens.length} depositantes cadastrados.`);
+const texto=document.getElementById('depositantes-massa').value.trim();
+if(!texto)return alert('Cole pelo menos um depositante.');
+const itens=texto.split(/\r?\n/).map(nome=>nome.trim()).filter(Boolean);
+const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes/massa`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
+body:JSON.stringify({itens})
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar depositantes.');
+alert(resultado.mensagem);
 }
 
 async function addServicosEmMassa(){
-const itens=document.getElementById('servicos-massa').value.trim().split(/\r?\n/).map(nome=>({nome:nome.trim(),ativo:true})).filter(x=>x.nome);
-if(itens.length===0)return alert('Cole pelo menos um serviço.');
-const {error}=await supabaseClient.from('atividades_cadastro').upsert(itens,{onConflict:'nome'});
-if(error)return alert(error.message);
-alert(`${itens.length} serviços cadastrados.`);
+const texto=document.getElementById('servicos-massa').value.trim();
+if(!texto)return alert('Cole pelo menos um serviço.');
+const itens=texto.split(/\r?\n/).map(nome=>nome.trim()).filter(Boolean);
+const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos/massa`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
+body:JSON.stringify({itens})
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar serviços.');
+alert(resultado.mensagem);
 }
 
 function abrirTabela(titulo,colunas,linhas){
-const html=`<html><head><title>${titulo}</title><style>body{font-family:Arial;background:#0f172a;color:white;padding:24px}h1{color:#38bdf8}table{width:100%;border-collapse:collapse;background:#1e293b}td,th{padding:10px;border-bottom:1px solid #334155}th{color:#38bdf8}button{padding:12px 18px;border:0;border-radius:8px;background:#38bdf8;font-weight:bold;cursor:pointer;margin-bottom:16px;}</style></head><body><h1>${titulo}</h1><button onclick="window.close()">⬅️ Fechar</button><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhas.map(l=>`<tr>${l.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
-const w=window.open('','_blank');
-w.document.write(html);
-w.document.close();
+const html=`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${titulo}</title>
+<style>
+body{font-family:Arial;background:#0f172a;color:white;padding:24px}
+h1{color:#38bdf8}
+table{width:100%;border-collapse:collapse;background:#1e293b}
+td,th{padding:10px;border-bottom:1px solid #334155;text-align:left}
+th{color:#38bdf8}
+button{padding:12px 18px;border:0;border-radius:8px;background:#38bdf8;font-weight:bold;cursor:pointer;margin-bottom:16px}
+</style>
+</head>
+<body>
+<h1>${titulo}</h1>
+<button onclick="window.location.href='admin-cadastros.html'">⬅️ Voltar para Cadastros</button>
+<table>
+<thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+<tbody>${linhas.map(l=>`<tr>${l.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody>
+</table>
+</body>
+</html>`;
+document.open();
+document.write(html);
+document.close();
 }
 
 async function abrirPaginaUsuarios(){
-const token=localStorage.getItem('multilog_token');
-
 const resposta=await fetch(`${API_BASE_URL}/api/admin/usuarios`,{
-headers:{
-'Authorization':`Bearer ${token}`
-}
+headers:{'Authorization':`Bearer ${getToken()}`}
 });
-
 const resultado=await resposta.json();
-
 if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar usuários.');
-
-abrirTabela(
-'Usuários Cadastrados',
-['Nome','Login','Tipo','Status'],
-resultado.usuarios.map(x=>[x.nome,x.usuario,x.tipo,x.ativo?'Ativo':'Inativo'])
-);
+abrirTabela('Usuários Cadastrados',['Nome','Login','Tipo','Status'],resultado.usuarios.map(x=>[x.nome,x.usuario,x.tipo,x.ativo?'Ativo':'Inativo']));
 }
 
 async function abrirPaginaDepositantes(){
-const {data,error}=await supabaseClient.from('depositantes').select('nome,ativo').order('nome');
-if(error)return alert(error.message);
-abrirTabela('Depositantes Cadastrados',['Nome','Status'],data.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));
+const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes`,{
+headers:{'Authorization':`Bearer ${getToken()}`}
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar depositantes.');
+abrirTabela('Depositantes Cadastrados',['Nome','Status'],resultado.depositantes.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));
 }
 
 async function abrirPaginaServicos(){
-const {data,error}=await supabaseClient.from('atividades_cadastro').select('nome,ativo').order('nome');
-if(error)return alert(error.message);
-abrirTabela('Serviços Cadastrados',['Nome','Status'],data.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));
+const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos`,{
+headers:{'Authorization':`Bearer ${getToken()}`}
+});
+const resultado=await resposta.json();
+if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar serviços.');
+abrirTabela('Serviços Cadastrados',['Nome','Status'],resultado.servicos.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));
 }
+
+function voltarPortalAdmin(){
+const usuarioSalvo=localStorage.getItem('multilog_usuario');
+
+if(!usuarioSalvo){
+window.location.href='index.html';
+return;
+}
+
+const usuario=JSON.parse(usuarioSalvo);
+
+if(usuario.tipo==='admin'){
+window.location.href='index.html?admin=1';
+}else{
+window.location.href='index.html';
+}
+}
+
 </script>
 </body>
 </html>

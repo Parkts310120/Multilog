@@ -1,0 +1,238 @@
+npm run dev:all
+
+# README - GitHub Codespaces (Padrão Multilog)
+
+## Estrutura Oficial de Desenvolvimento
+
+O projeto Multilog deve sempre utilizar 3 terminais separados.
+
+### Terminal 1 - Backend
+
+Responsável pela API Node.js.
+
+Comando:
+
+```bash
+cd /workspaces/Multilog/backend
+npm run dev
+```
+
+Resultado esperado:
+
+```text
+🚀 Multilog API rodando na porta 3000
+```
+
+Porta:
+
+```text
+3000
+```
+
+---
+
+### Terminal 2 - Frontend
+
+Responsável pela interface Vite.
+
+Comando:
+
+```bash
+cd /workspaces/Multilog
+npm run dev
+```
+
+Resultado esperado:
+
+```text
+VITE ready
+```
+
+Porta:
+
+```text
+5173
+```
+
+---
+
+### Terminal 3 - Utilitário
+
+Usado para:
+
+* curl
+* git
+* testes
+* consultas
+* comandos SQL
+* debug
+
+Comando inicial:
+
+```bash
+cd /workspaces/Multilog
+```
+
+---
+
+# Limpeza de Ambiente
+
+Caso apareçam portas duplicadas:
+
+```bash
+fuser -k 3000/tcp
+fuser -k 5173/tcp
+fuser -k 5174/tcp
+```
+
+Depois subir novamente:
+
+```text
+Terminal 1 → Backend
+Terminal 2 → Frontend
+Terminal 3 → Utilitário
+```
+
+---
+
+# Portas Oficiais do Projeto
+
+```text
+3000 → API Node.js
+5173 → Frontend Vite
+```
+
+Não utilizar:
+
+```text
+5174
+5175
+5176
+```
+
+Se aparecerem, normalmente existem instâncias duplicadas do Vite.
+
+---
+
+# Configuração do DevContainer
+
+Arquivo:
+
+```text
+.devcontainer/devcontainer.json
+```
+
+Conteúdo:
+
+```json
+{
+  "forwardPorts": [3000, 5173],
+  "portsAttributes": {
+    "3000": {
+      "label": "Multilog API",
+      "visibility": "public"
+    },
+    "5173": {
+      "label": "Multilog Frontend",
+      "visibility": "public"
+    }
+  }
+}
+```
+
+Observação:
+
+Mesmo com essa configuração, o Codespaces pode ocasionalmente recriar a porta 3000 como Private.
+
+Sempre conferir a aba:
+
+```text
+PORTAS
+```
+
+e garantir:
+
+```text
+3000 → Public
+5173 → Public
+```
+
+---
+
+# Estrutura Atual da Arquitetura
+
+```text
+Frontend (Vite)
+        ↓
+API Node.js (Express)
+        ↓
+Supabase PostgreSQL
+```
+
+---
+
+# Regras do Projeto
+
+1. Nunca acessar o banco diretamente pelo frontend.
+2. Toda comunicação deve passar pela API.
+3. Sempre manter Backend e Frontend em terminais separados.
+4. Antes de grandes alterações:
+
+```bash
+git add .
+git commit -m "checkpoint"
+git push
+```
+
+5. Existe uma branch de restauração:
+
+```text
+backup-base-antes-enterprise
+```
+
+6. Existe uma versão base congelada:
+
+```text
+v1-base-estavel
+```
+
+Utilizar caso seja necessário retornar ao estado anterior do projeto.
+
+---
+
+# Roadmap Enterprise
+
+Fase atual:
+
+```text
+Frontend
+↓
+API
+↓
+PostgreSQL
+```
+
+Próximas fases:
+
+```text
+JWT
+✓
+
+Admin API
+✓ Parcial
+
+Power BI
+Em desenvolvimento
+
+Logs de Auditoria
+Pendente
+
+Permissões Avançadas
+Pendente
+
+AWS RDS
+Futuro
+
+Integrações ERP/WMS
+Futuro
+```
