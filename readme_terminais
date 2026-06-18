@@ -1,0 +1,179 @@
+# README - INICIANDO O MULTILOG NO CODESPACES
+
+## Estrutura Oficial
+
+Sempre trabalhar com 3 terminais:
+
+```text
+Terminal 1 → BACKEND
+Terminal 2 → FRONTEND
+Terminal 3 → UTILITÁRIO
+```
+
+---
+
+# Terminal 1 - BACKEND
+
+Nome:
+
+```text
+BACKEND
+```
+
+Comandos:
+
+```bash
+cd /workspaces/Multilog/backend
+npm run dev
+```
+
+Resultado esperado:
+
+```text
+🚀 Multilog API rodando na porta 3000
+```
+
+Porta:
+
+```text
+3000
+```
+
+---
+
+# Terminal 2 - FRONTEND
+
+Nome:
+
+```text
+FRONTEND
+```
+
+Comandos:
+
+```bash
+cd /workspaces/Multilog
+npm run dev:all
+```
+
+Caso o dev:all não exista:
+
+```bash
+npm run dev
+```
+
+Resultado esperado:
+
+```text
+VITE ready
+```
+
+Porta:
+
+```text
+5173
+```
+
+---
+
+# Terminal 3 - UTILITÁRIO
+
+Nome:
+
+```text
+UTILITÁRIO
+```
+
+Comandos:
+
+```bash
+cd /workspaces/Multilog
+```
+
+Usado para:
+
+* git
+* curl
+* testes
+* consultas
+* debug
+
+---
+
+# Verificar Portas
+
+Abrir aba:
+
+```text
+PORTS
+```
+
+Confirmar:
+
+```text
+3000 → PUBLIC
+5173 → PUBLIC
+```
+
+Se estiver PRIVATE:
+
+```text
+Botão direito → Port Visibility → Public
+```
+
+---
+
+# Testar API
+
+No terminal UTILITÁRIO:
+
+```bash
+curl http://localhost:3000/api/status
+```
+
+Resultado esperado:
+
+```json
+{
+  "sistema":"Multilog API",
+  "status":"ONLINE"
+}
+```
+
+---
+
+# Abrir Sistema
+
+Abrir a porta:
+
+```text
+5173
+```
+
+Fazer login normalmente.
+
+---
+
+# Antes de Alterações Grandes
+
+Sempre executar:
+
+```bash
+git add .
+git commit -m "checkpoint"
+git push
+```
+
+---
+
+# Ordem Correta
+
+1. Abrir Codespace
+2. Abrir os 3 terminais
+3. Subir Backend
+4. Subir Frontend
+5. Conferir portas Public
+6. Testar API
+7. Abrir sistema
+8. Trabalhar
+9. Commit + Push ao terminar

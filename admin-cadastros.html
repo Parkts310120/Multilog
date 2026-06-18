@@ -35,6 +35,7 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <button onclick="mostrarSecao('sec-admin')">🔐 Admin</button>
 <button onclick="mostrarSecao('sec-depositantes')">📦 Depositantes</button>
 <button onclick="mostrarSecao('sec-servicos')">🛠️ Serviços</button>
+<button onclick="mostrarSecao('sec-areas')">🏭 Áreas</button>
 </div>
 </div>
 </div>
@@ -49,6 +50,7 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <button onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
 <button onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
 <button onclick="abrirPaginaServicos()">Abrir Lista de Serviços</button>
+<button onclick="abrirPaginaAreas()">Abrir Lista de Áreas</button>
 </div>
 </div>
 </div>
@@ -111,6 +113,23 @@ button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--prima
 <input id="nova-atividade">
 <button onclick="addAtividadeCadastro()">Adicionar Serviço</button>
 </div>
+</div>
+</div>
+
+<div class="card secao-cadastro" id="sec-areas">
+<div class="box">
+<h3>🏭 Áreas</h3>
+<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+
+<h4>🏭 Cadastro em Massa de Áreas</h4>
+<textarea id="areas-massa" style="min-height:120px"></textarea>
+<button onclick="addAreasEmMassa()">Cadastrar Áreas em Massa</button>
+
+<hr style="margin:20px 0;border-color:#334155;">
+
+<h4>🏭 Nova Área</h4>
+<input id="nova-area">
+<button onclick="addArea()">Adicionar Área</button>
 </div>
 </div>
 
@@ -234,6 +253,55 @@ if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao ca
 alert(resultado.mensagem);
 }
 
+async function addArea(){
+const nome=document.getElementById('nova-area').value.trim();
+if(!nome)return alert('Digite a área.');
+
+const resposta=await fetch(`${API_BASE_URL}/api/admin/areas`,{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+'Authorization':`Bearer ${getToken()}`
+},
+body:JSON.stringify({nome})
+});
+
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso){
+return alert(resultado.mensagem||'Erro ao cadastrar área.');
+}
+
+alert(resultado.mensagem||'Área cadastrada!');
+}
+
+async function addAreasEmMassa(){
+const texto=document.getElementById('areas-massa').value.trim();
+if(!texto)return alert('Cole pelo menos uma área.');
+
+const itens=texto
+.split(/\r?\n/)
+.map(nome=>nome.trim())
+.filter(Boolean);
+
+const resposta=await fetch(`${API_BASE_URL}/api/admin/areas/massa`,{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+'Authorization':`Bearer ${getToken()}`
+},
+body:JSON.stringify({itens})
+});
+
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso){
+return alert(resultado.mensagem||'Erro ao cadastrar áreas.');
+}
+
+alert(resultado.mensagem);
+}
+
 function abrirTabela(titulo,colunas,linhas){
 const html=`
 <!DOCTYPE html>
@@ -307,7 +375,25 @@ window.location.href='index.html?admin=1';
 window.location.href='index.html';
 }
 }
+async function abrirPaginaAreas(){
+const resposta=await fetch(`${API_BASE_URL}/api/admin/areas`,{
+headers:{
+'Authorization':`Bearer ${getToken()}`
+}
+});
 
+const resultado=await resposta.json();
+
+if(!resposta.ok||!resultado.sucesso){
+return alert(resultado.mensagem||'Erro ao carregar áreas.');
+}
+
+abrirTabela(
+'Áreas Cadastradas',
+['Nome','Status'],
+resultado.areas.map(x=>[x.nome,x.ativo?'Ativo':'Inativo'])
+);
+}
 </script>
 </body>
 </html>

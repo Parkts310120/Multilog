@@ -14,7 +14,7 @@ h1{text-align:center;font-size:1.6rem;color:var(--primary);margin-bottom:4px;fon
 .card{background-color:var(--card-bg);padding:20px;border-radius:16px;box-shadow:0 10px 15px -3px rgba(0,0,0,.3);margin-bottom:24px;border:1px solid var(--border)}
 .input-group{margin-bottom:16px}
 label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
-select,input[type="text"],input[type="password"]{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background-color:#0f172a;color:var(--text);font-size:1rem;transition:border-color .2s}
+select,input[type="text"],input[type="password"],input[type="number"]{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background-color:#0f172a;color:var(--text);font-size:1rem;transition:border-color .2s}
 select:focus,input:focus{outline:none;border-color:var(--primary)}
 .status-panel{background-color:#0f172a;padding:12px;border-radius:8px;margin-bottom:16px;border:1px dashed var(--border);text-align:center}
 .status-badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:.75rem;font-weight:bold;text-transform:uppercase}
@@ -33,8 +33,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .logout-link{text-align:center;margin-top:16px;font-size:.85rem;color:var(--text-secondary);cursor:pointer;text-decoration:underline}
 </style>
 </head>
+
 <body>
-    
+
 <div class="container" id="login-screen" style="display:none;">
     <h1>Acesso Restrito</h1>
     <div class="subtitle">Faça login para acessar o sistema</div>
@@ -110,27 +111,23 @@ button:disabled{opacity:.4;cursor:not-allowed}
     <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
-const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
-const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let usuarioLogado=null;
 let currentSession=null;
 let timerInterval=null;
 
 document.addEventListener('DOMContentLoaded',()=>{
-const usuarioSalvo=localStorage.getItem('multilog_usuario');
-const token=localStorage.getItem('multilog_token');
+    const usuarioSalvo=localStorage.getItem('multilog_usuario');
+    const token=localStorage.getItem('multilog_token');
 
-if(usuarioSalvo&&token){
-usuarioLogado=JSON.parse(usuarioSalvo);
-showAppScreen();
-}else{
-showLoginScreen();
-}
+    if(usuarioSalvo&&token){
+        usuarioLogado=JSON.parse(usuarioSalvo);
+        showAppScreen();
+    }else{
+        showLoginScreen();
+    }
 });
 
 async function handleLogin(){
@@ -172,6 +169,10 @@ function handleLogout(){
         alert('Finalize a atividade em andamento antes de sair!');
         return;
     }
+
+    localStorage.removeItem('multilog_token');
+    localStorage.removeItem('multilog_usuario');
+
     showLoginScreen();
 }
 
@@ -188,7 +189,8 @@ function showLoginScreen(){
 function showAppScreen(){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    document.getElementById('executante-logado').value = usuarioLogado.nome + ' (' + usuarioLogado.usuario + ')';
+    document.getElementById('executante-logado').value=usuarioLogado.nome+' ('+usuarioLogado.usuario+')';
+
     const isAdmin=usuarioLogado&&usuarioLogado.tipo==='admin';
 
     if(isAdmin){
@@ -208,6 +210,9 @@ function showAppScreen(){
 async function initAppLogic(){
     document.getElementById('depositor-name').disabled=false;
     document.getElementById('activity-name').disabled=false;
+    document.getElementById('area-name').disabled=false;
+    document.getElementById('quantidade').disabled=false;
+    document.getElementById('unidade').disabled=false;
     document.getElementById('btn-start').disabled=false;
     document.getElementById('btn-end').disabled=true;
 
@@ -222,14 +227,21 @@ async function carregarCadastros(){
         const token=localStorage.getItem('multilog_token');
 
         const [respDepositantes,respServicos,respAreas]=await Promise.all([
-        fetch(`${API_BASE_URL}/api/depositantes`,{headers:{'Authorization':`Bearer ${token}`}}),
-        fetch(`${API_BASE_URL}/api/servicos`,{headers:{'Authorization':`Bearer ${token}`}}),
-        fetch(`${API_BASE_URL}/api/areas`,{headers:{'Authorization':`Bearer ${token}`}})
+            fetch(`${API_BASE_URL}/api/depositantes`,{
+                headers:{'Authorization':`Bearer ${token}`}
+            }),
+            fetch(`${API_BASE_URL}/api/servicos`,{
+                headers:{'Authorization':`Bearer ${token}`}
+            }),
+            fetch(`${API_BASE_URL}/api/areas`,{
+                headers:{'Authorization':`Bearer ${token}`}
+            })
         ]);
 
         const resultDepositantes=await respDepositantes.json();
         const resultServicos=await respServicos.json();
         const resultAreas=await respAreas.json();
+
         if(!respDepositantes.ok||!resultDepositantes.sucesso){
             alert(resultDepositantes.mensagem||'Erro ao carregar depositantes.');
             return;
@@ -240,14 +252,22 @@ async function carregarCadastros(){
             return;
         }
 
+        if(!respAreas.ok||!resultAreas.sucesso){
+            alert(resultAreas.mensagem||'Erro ao carregar áreas.');
+            return;
+        }
+
         const depositantes=resultDepositantes.depositantes;
         const servicos=resultServicos.servicos;
+        const areas=resultAreas.areas;
 
         const depSelect=document.getElementById('depositor-name');
         const ativSelect=document.getElementById('activity-name');
+        const areaSelect=document.getElementById('area-name');
 
         depSelect.innerHTML='';
         ativSelect.innerHTML='';
+        areaSelect.innerHTML='';
 
         if(!depositantes||depositantes.length===0){
             depSelect.innerHTML='<option value="">Nenhum depositante cadastrado</option>';
@@ -262,6 +282,14 @@ async function carregarCadastros(){
         }else{
             servicos.forEach(s=>{
                 ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
+            });
+        }
+
+        if(!areas||areas.length===0){
+            areaSelect.innerHTML='<option value="">Nenhuma área cadastrada</option>';
+        }else{
+            areas.forEach(a=>{
+                areaSelect.innerHTML+=`<option value="${a.nome}">${a.nome}</option>`;
             });
         }
 
@@ -302,20 +330,34 @@ function startLiveTimerUpdate(startTime){
 }
 
 function startTracking(){
-    const user=usuarioLogado.nome + ' (' + usuarioLogado.usuario + ')';
+    const user=usuarioLogado.nome+' ('+usuarioLogado.usuario+')';
     const depositor=document.getElementById('depositor-name').value;
     const name=document.getElementById('activity-name').value;
+    const area=document.getElementById('area-name').value;
+    const quantidade=Number(document.getElementById('quantidade').value||0);
+    const unidade=document.getElementById('unidade').value.trim()||'unidade';
     const startTime=new Date();
 
-    if(!user||!depositor||!name){
-        alert('Selecione executante, depositante e serviço.');
+    if(!user||!depositor||!name||!area){
+        alert('Selecione executante, depositante, serviço e área.');
         return;
     }
 
-    currentSession={user,depositor,name,startTime:startTime.toISOString()};
+    currentSession={
+        user,
+        depositor,
+        name,
+        area,
+        quantidade,
+        unidade,
+        startTime:startTime.toISOString()
+    };
 
     document.getElementById('depositor-name').disabled=true;
     document.getElementById('activity-name').disabled=true;
+    document.getElementById('area-name').disabled=true;
+    document.getElementById('quantidade').disabled=true;
+    document.getElementById('unidade').disabled=true;
     document.getElementById('btn-start').disabled=true;
     document.getElementById('btn-end').disabled=false;
 
@@ -331,17 +373,23 @@ async function stopTracking(){
     const endTime=new Date();
     const startTime=new Date(currentSession.startTime);
     const diffMs=endTime-startTime;
+    const diffSegundos=Math.round(diffMs/1000);
     const diffMins=Math.round(diffMs/60000);
+    const horas=diffMs/3600000;
 
     let durationText='';
 
     if(diffMins<1){
-        durationText=`${Math.round(diffMs/1000)} segundos`;
+        durationText=`${diffSegundos} segundos`;
     }else if(diffMins<60){
         durationText=`${diffMins} min`;
     }else{
         durationText=`${Math.floor(diffMins/60)}h e ${diffMins%60}min`;
     }
+
+    const produtividadeHora=horas>0 ? Number((currentSession.quantidade/horas).toFixed(2)) : 0;
+    const metaHora=0;
+    const atingiuMeta=false;
 
     const token=localStorage.getItem('multilog_token');
 
@@ -355,10 +403,16 @@ async function stopTracking(){
             usuario:currentSession.user,
             depositante:currentSession.depositor,
             atividade:currentSession.name,
+            area:currentSession.area,
+            quantidade:currentSession.quantidade,
+            unidade:currentSession.unidade,
+            produtividade_hora:produtividadeHora,
+            meta_hora:metaHora,
+            atingiu_meta:atingiuMeta,
             inicio:startTime.toISOString(),
             fim:endTime.toISOString(),
             duracao:durationText,
-            duracao_segundos:Math.round(diffMs/1000)
+            duracao_segundos:diffSegundos
         })
     });
 
@@ -375,12 +429,15 @@ async function stopTracking(){
 
     document.getElementById('depositor-name').disabled=false;
     document.getElementById('activity-name').disabled=false;
+    document.getElementById('area-name').disabled=false;
+    document.getElementById('quantidade').disabled=false;
+    document.getElementById('unidade').disabled=false;
     document.getElementById('btn-start').disabled=false;
     document.getElementById('btn-end').disabled=true;
 
     updateStatusUI(false);
 
-    alert(`✅ Serviço concluído!\n\n⏱️ Tempo Total Utilizado: ${durationText}`);
+    alert(`✅ Serviço concluído!\n\n⏱️ Tempo Total: ${durationText}\n📦 Quantidade: ${document.getElementById('quantidade').value||0} ${document.getElementById('unidade').value||'unidade'}\n📊 Produtividade: ${produtividadeHora} por hora`);
 }
 </script>
 </body>
