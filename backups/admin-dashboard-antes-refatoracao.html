@@ -1,3 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Multilog</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+--bg-color:#0f172a;
+--card-bg:#1e293b;
+--primary:#38bdf8;
+--danger:#ef4444;
+--text:#f8fafc;
+--text-secondary:#94a3b8;
+--border:#334155;
+}
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+padding:16px;
+font-family:Arial,sans-serif;
+background:var(--bg-color);
+color:var(--text);
+display:flex;
+justify-content:center;
+}
+
+.container{
+width:100%;
+max-width:1400px;
+}
+
+h1{
+text-align:center;
+color:var(--primary);
+margin-bottom:25px;
+}
+
+.card{
+background:var(--card-bg);
+padding:20px;
+border-radius:16px;
+border:1px solid var(--border);
+margin-bottom:20px;
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:8px;
+background:var(--primary);
+font-weight:bold;
+cursor:pointer;
+margin-top:12px;
+}
+
+.btn-danger{
+background:var(--danger);
+color:white;
+}
+
+.filter-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:14px;
+}
+
+.input-group{
+margin-bottom:10px;
+}
+
+label{
+display:block;
+font-size:.8rem;
+font-weight:bold;
+margin-bottom:6px;
+color:var(--text-secondary);
+text-transform:uppercase;
+}
+
+input,select{
+width:100%;
+padding:12px;
+border-radius:8px;
+border:1px solid var(--border);
+background:#0f172a;
+color:white;
+}
+
+.quick-grid{
+display:grid;
+grid-template-columns:repeat(6,1fr);
+gap:12px;
+}
+
+.quick-btn{
+background:#0f172a;
+border:1px solid var(--border);
+color:white;
+padding:14px;
+border-radius:12px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.kpi-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:16px;
+}
+
+.kpi-card{
+background:#0f172a;
+border:1px solid var(--border);
+padding:20px;
+border-radius:14px;
+}
+
+.kpi-title{
+font-size:.8rem;
+color:var(--text-secondary);
+text-transform:uppercase;
+font-weight:bold;
+}
+
+.kpi-value{
+font-size:1.8rem;
+font-weight:bold;
+color:var(--primary);
+margin-top:10px;
+}
+
+.chart-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.chart-box{
+background:#0f172a;
+border:1px solid var(--border);
+padding:20px;
+border-radius:14px;
+}
+
+.chart-full{
+grid-column:1 / -1;
+}
+
+canvas{
+width:100% !important;
+max-height:350px;
+}
+
+.rank-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+.rank-box{
+background:#0f172a;
+border:1px solid var(--border);
+padding:20px;
+border-radius:14px;
+}
+
+.rank-row{
+display:flex;
+margin-top:8px;
+padding-bottom:8px;
+border-bottom:1px solid #233044;
+}
+
+.rank-name{
+font-weight:bold;
+}
+
+.rank-value{
+margin-left:auto;
+color:var(--primary);
+font-weight:bold;
+}
+
+@media(max-width:900px){
+
+.filter-grid{
+grid-template-columns:1fr;
+}
+
+.quick-grid{
+grid-template-columns:1fr 1fr;
+}
+
+.kpi-grid{
+grid-template-columns:1fr;
+}
+
+.chart-grid{
+grid-template-columns:1fr;
+}
+
+.rank-grid{
+grid-template-columns:1fr;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📊 Dashboard Operacional Multilog</h1>
+
+<div class="card">
+<button onclick="history.back()">⬅️ Voltar</button>
+</div>
+
+<div class="card">
+
+<h3>⚡ Filtros Rápidos</h3>
+
+<div class="quick-grid">
+
+<button class="quick-btn" onclick="periodoHoje()">Hoje</button>
+
+<button class="quick-btn" onclick="periodoOntem()">Ontem</button>
+
+<button class="quick-btn" onclick="periodo7Dias()">7 Dias</button>
+
+<button class="quick-btn" onclick="periodo30Dias()">30 Dias</button>
+
+<button class="quick-btn" onclick="periodoMesAtual()">Mês Atual</button>
+
+<button class="quick-btn" onclick="periodoAno()">Ano</button>
+
+</div>
+
+<h3 style="margin-top:30px">Filtros</h3>
+
+<div class="filter-grid">
+
+<div class="input-group">
+<label>Data Inicial</label>
+<input type="date" id="filtro-data-inicial">
+</div>
+
+<div class="input-group">
+<label>Data Final</label>
+<input type="date" id="filtro-data-final">
+</div>
+
+<div class="input-group">
+<label>Operador</label>
+<select id="filtro-usuario"></select>
+</div>
+
+<div class="input-group">
+<label>Cliente</label>
+<select id="filtro-depositante"></select>
+</div>
+
+<div class="input-group">
+<label>Área</label>
+<select id="filtro-area"></select>
+</div>
+
+<div class="input-group">
+<label>Serviço</label>
+<select id="filtro-servico"></select>
+</div>
+
+</div>
+
+<button onclick="aplicarFiltros()">
+Aplicar Filtros
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Indicadores</h3>
+
+<div id="kpi-container" class="kpi-grid">
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Gráficos</h3>
+
+<div class="chart-grid">
+
+<div class="chart-box chart-full">
+<h4>📈 Produção por Dia</h4>
+<canvas id="chart-producao-dia"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>🏢 Tempo por Cliente</h4>
+<canvas id="chart-cliente"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>👷 Tempo por Operador</h4>
+<canvas id="chart-operador"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>🏭 Tempo por Área</h4>
+<canvas id="chart-area"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>🛠 Tempo por Serviço</h4>
+<canvas id="chart-servico"></canvas>
+</div>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Rankings</h3>
+
+<div class="rank-grid">
+
+<div class="rank-box">
+
+<h4>👷 Top Operadores</h4>
+
+<div id="ranking-operadores">
+
+</div>
+
+</div>
+
+<div class="rank-box">
+
+<h4>🏢 Top Clientes</h4>
+
+<div id="ranking-clientes">
+
+</div>
+
+</div>
+
+<div class="rank-box">
+
+<h4>🏭 Top Áreas</h4>
+
+<div id="ranking-areas">
+
+</div>
+
+</div>
+
+<div class="rank-box">
+
+<h4>🛠 Top Serviços</h4>
+
+<div id="ranking-servicos">
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const API_BASE_URL =
+"https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
+
 let globalActivities = [];
 let filteredActivities = [];
 
@@ -767,3 +1157,9 @@ beginAtZero:true
 });
 
 }
+
+</script>
+
+</div>
+</body>
+</html>
