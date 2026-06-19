@@ -20,19 +20,10 @@ async function handleLogin(){
     const errorEl=document.getElementById('login-error');
 
     try{
-        const resposta=await fetch(`${API_BASE_URL}/api/login`,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({usuario:userIn,senha:passIn})
+        const resultado=await apiPost('/api/login',{
+            usuario:userIn,
+            senha:passIn
         });
-
-        const resultado=await resposta.json();
-
-        if(!resposta.ok||!resultado.sucesso){
-            errorEl.innerText=resultado.mensagem||'Usuário ou senha incorretos!';
-            errorEl.style.display='block';
-            return;
-        }
 
         localStorage.setItem('multilog_token',resultado.token);
         localStorage.setItem('multilog_usuario',JSON.stringify(resultado.usuario));
@@ -42,7 +33,7 @@ async function handleLogin(){
         showAppScreen();
 
     }catch(erro){
-        errorEl.innerText='Erro ao conectar com a API.';
+        errorEl.innerText=erro.message||'Usuário ou senha incorretos!';
         errorEl.style.display='block';
         console.error(erro);
     }
@@ -119,38 +110,11 @@ async function initAppLogic(){
 
 async function carregarCadastros(){
     try{
-        const token=localStorage.getItem('multilog_token');
-
-        const [respDepositantes,respServicos,respAreas]=await Promise.all([
-            fetch(`${API_BASE_URL}/api/depositantes`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            }),
-            fetch(`${API_BASE_URL}/api/servicos`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            }),
-            fetch(`${API_BASE_URL}/api/areas`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            })
+        const [resultDepositantes,resultServicos,resultAreas]=await Promise.all([
+            apiGet('/api/depositantes'),
+            apiGet('/api/servicos'),
+            apiGet('/api/areas')
         ]);
-
-        const resultDepositantes=await respDepositantes.json();
-        const resultServicos=await respServicos.json();
-        const resultAreas=await respAreas.json();
-
-        if(!respDepositantes.ok||!resultDepositantes.sucesso){
-            alert(resultDepositantes.mensagem||'Erro ao carregar depositantes.');
-            return;
-        }
-
-        if(!respServicos.ok||!resultServicos.sucesso){
-            alert(resultServicos.mensagem||'Erro ao carregar serviços.');
-            return;
-        }
-
-        if(!respAreas.ok||!resultAreas.sucesso){
-            alert(resultAreas.mensagem||'Erro ao carregar áreas.');
-            return;
-        }
 
         const depositantes=resultDepositantes.depositantes;
         const servicos=resultServicos.servicos;
@@ -193,7 +157,7 @@ async function carregarCadastros(){
 
     }catch(erro){
         console.error(erro);
-        alert('Erro ao conectar com a API para carregar cadastros.');
+        alert(erro.message||'Erro ao conectar com a API para carregar cadastros.');
     }
 }
 
@@ -340,46 +304,29 @@ async function stopTracking(){
     const metaHora=0;
     const atingiuMeta=false;
 
-    const token=localStorage.getItem('multilog_token');
-
     try{
-        const resposta=await fetch(`${API_BASE_URL}/api/atividades`,{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':`Bearer ${token}`
-            },
-            body:JSON.stringify({
-                usuario:currentSession.user,
-                depositante:currentSession.depositor,
-                atividade:currentSession.name,
-                area:currentSession.area,
-                lote:currentSession.lote,
-                quantidade_esperada:currentSession.quantidadeEsperada,
-                quantidade_realizada:quantidadeRealizada,
-                diferenca_quantidade:diferencaQuantidade,
-                quantidade:quantidadeRealizada,
-                unidade:currentSession.unidade,
-                produtividade_hora:produtividadeHora,
-                observacao:observacao,
-                meta_hora:metaHora,
-                atingiu_meta:atingiuMeta,
-                inicio:startTime.toISOString(),
-                fim:endTime.toISOString(),
-                duracao:durationText,
-                duracao_segundos:diffSegundos
-            })
+        const resultado=await apiPost('/api/atividades',{
+            usuario:currentSession.user,
+            depositante:currentSession.depositor,
+            atividade:currentSession.name,
+            area:currentSession.area,
+            lote:currentSession.lote,
+            quantidade_esperada:currentSession.quantidadeEsperada,
+            quantidade_realizada:quantidadeRealizada,
+            diferenca_quantidade:diferencaQuantidade,
+            quantidade:quantidadeRealizada,
+            unidade:currentSession.unidade,
+            produtividade_hora:produtividadeHora,
+            observacao:observacao,
+            meta_hora:metaHora,
+            atingiu_meta:atingiuMeta,
+            inicio:startTime.toISOString(),
+            fim:endTime.toISOString(),
+            duracao:durationText,
+            duracao_segundos:diffSegundos
         });
 
-        const resultado=await resposta.json();
-
-        console.log('RESPOSTA SALVAR ATIVIDADE:', resposta.status, resultado);
-
-        if(!resposta.ok||!resultado.sucesso){
-            alert('Erro ao salvar atividade: '+(resultado.mensagem||'Erro desconhecido'));
-            startLiveTimerUpdate(startTime);
-            return;
-        }
+        console.log('RESPOSTA SALVAR ATIVIDADE:', resultado);
 
         let mensagemFinal=`✅ Contagem concluída!\n\n⏱️ Tempo Total: ${durationText}\n✅ Realizado: ${quantidadeRealizada}`;
 
@@ -422,7 +369,7 @@ async function stopTracking(){
 
     }catch(erro){
         console.error(erro);
-        alert('Erro ao conectar com a API para salvar atividade.');
+        alert(erro.message||'Erro ao conectar com a API para salvar atividade.');
         startLiveTimerUpdate(startTime);
     }
 }
