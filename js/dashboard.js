@@ -14,37 +14,13 @@ loadActivities
 
 async function loadActivities(){
 
-const token=
-localStorage.getItem('multilog_token');
-
-if(!token){
-alert('Sessão expirada');
-location.href='index.html';
+if(!verificarLogin()){
 return;
 }
 
 try{
 
-const resposta=
-await fetch(
-`${API_BASE_URL}/api/admin/atividades`,
-{
-headers:{
-Authorization:`Bearer ${token}`
-}
-}
-);
-
-const resultado=
-await resposta.json();
-
-if(
-!resposta.ok ||
-!resultado.sucesso
-){
-alert(resultado.mensagem);
-return;
-}
+const resultado=await apiGet('/api/admin/atividades');
 
 globalActivities=
 resultado.atividades.map(item=>({
