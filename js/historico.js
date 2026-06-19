@@ -10,25 +10,14 @@ let chartProducaoDia=null;
 document.addEventListener('DOMContentLoaded',loadActivitiesFromSupabase);
 
 async function loadActivitiesFromSupabase(){
-const token=localStorage.getItem('multilog_token');
 
-if(!token){
-alert('Sessão expirada. Faça login novamente.');
-window.location.href='index.html';
+if(!verificarLogin()){
 return;
 }
 
 try{
-const resposta=await fetch(`${API_BASE_URL}/api/admin/atividades`,{
-headers:{'Authorization':`Bearer ${token}`}
-});
 
-const resultado=await resposta.json();
-
-if(!resposta.ok||!resultado.sucesso){
-alert(resultado.mensagem||'Erro ao carregar histórico.');
-return;
-}
+const resultado=await apiGet('/api/admin/atividades');
 
 globalActivities=resultado.atividades.map(item=>({
 id:item.id,
@@ -57,7 +46,7 @@ atualizarTela();
 
 }catch(erro){
 console.error(erro);
-alert('Erro ao conectar com a API.');
+alert(erro.message||'Erro ao conectar com a API.');
 }
 }
 
@@ -445,53 +434,32 @@ container.appendChild(div);
 async function deleteSingleItem(id){
 if(!confirm('Deseja ocultar este registro? Ele continuará salvo no banco.'))return;
 
-const token=localStorage.getItem('multilog_token');
-
 try{
-const resposta=await fetch(`${API_BASE_URL}/api/admin/atividades/${id}/ocultar`,{
-method:'PATCH',
-headers:{'Authorization':`Bearer ${token}`}
-});
 
-const resultado=await resposta.json();
-
-if(!resposta.ok||!resultado.sucesso){
-alert(resultado.mensagem||'Erro ao ocultar registro.');
-return;
-}
+await apiPatch(`/api/admin/atividades/${id}/ocultar`);
 
 await loadActivitiesFromSupabase();
 
 }catch(erro){
 console.error(erro);
-alert('Erro ao conectar com a API.');
+alert(erro.message||'Erro ao conectar com a API.');
 }
 }
 
 async function clearHistory(){
 if(!confirm('Deseja ocultar todo o histórico? Os dados continuarão no banco.'))return;
 
-const token=localStorage.getItem('multilog_token');
-
 try{
-const resposta=await fetch(`${API_BASE_URL}/api/admin/atividades/ocultar-todos`,{
-method:'PATCH',
-headers:{'Authorization':`Bearer ${token}`}
-});
 
-const resultado=await resposta.json();
-
-if(!resposta.ok||!resultado.sucesso){
-alert(resultado.mensagem||'Erro ao ocultar histórico.');
-return;
-}
+await apiPatch('/api/admin/atividades/ocultar-todos');
 
 await loadActivitiesFromSupabase();
+
 alert('Histórico ocultado da tela.');
 
 }catch(erro){
 console.error(erro);
-alert('Erro ao conectar com a API.');
+alert(erro.message||'Erro ao conectar com a API.');
 }
 }
 
