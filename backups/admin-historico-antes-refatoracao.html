@@ -1,3 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Histórico</title>
+<style>
+:root{--bg-color:#0f172a;--card-bg:#1e293b;--primary:#38bdf8;--danger:#ef4444;--text:#f8fafc;--text-secondary:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:var(--bg-color);color:var(--text);margin:0;padding:16px;display:flex;justify-content:center}
+.container{width:100%;max-width:1000px}
+h1{text-align:center;color:var(--primary)}
+.card{background:var(--card-bg);padding:20px;border-radius:16px;border:1px solid var(--border);margin-bottom:20px}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--primary);font-weight:bold;cursor:pointer;margin-bottom:12px}
+.btn-danger{background:var(--danger);color:white}
+.time-row{display:flex;font-size:.9rem;color:var(--text-secondary);margin-top:6px;gap:12px}
+.time-label{width:80px;font-weight:bold}
+.activity-item{background:#0f172a;padding:16px;border-radius:12px;margin-bottom:12px;border-left:4px solid var(--primary)}
+.activity-name{font-weight:bold;font-size:1.05rem}
+.duration-box{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);color:var(--primary);font-weight:bold}
+.empty-state{text-align:center;color:var(--text-secondary);padding:24px;border:1px dashed var(--border);border-radius:12px}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.input-group{margin-bottom:12px}
+label{display:block;font-size:.8rem;font-weight:bold;margin-bottom:6px;color:var(--text-secondary);text-transform:uppercase}
+input,select{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background:#0f172a;color:var(--text)}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.kpi-card{background:#0f172a;border:1px solid var(--border);border-radius:12px;padding:14px}
+.kpi-title{font-size:.78rem;color:var(--text-secondary);text-transform:uppercase;font-weight:bold}
+.kpi-value{font-size:1.35rem;color:var(--primary);font-weight:bold;margin-top:6px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.chart-box{background:#0f172a;padding:16px;border-radius:12px;border:1px solid var(--border)}
+.chart-box h4{margin-top:0;color:var(--primary)}
+.chart-box.full{grid-column:1 / -1}
+canvas{width:100%!important;max-height:320px}
+@media(max-width:750px){.filter-grid,.chart-grid,.kpi-grid{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>🔐 Histórico Admin</h1>
+
+<div class="card">
+<button onclick="history.back()">⬅️ Voltar ao Portal</button>
+</div>
+
+<div class="card">
+<h3>🔎 Filtros</h3>
+
+<div class="filter-grid">
+<div class="input-group">
+<label for="filtro-data-inicial">Data inicial</label>
+<input type="date" id="filtro-data-inicial">
+</div>
+
+<div class="input-group">
+<label for="filtro-data-final">Data final</label>
+<input type="date" id="filtro-data-final">
+</div>
+
+<div class="input-group">
+<label for="filtro-usuario">Operador</label>
+<select id="filtro-usuario"></select>
+</div>
+
+<div class="input-group">
+<label for="filtro-depositante">Depositante</label>
+<select id="filtro-depositante"></select>
+</div>
+
+<div class="input-group">
+<label for="filtro-area">Área</label>
+<select id="filtro-area"></select>
+</div>
+
+<div class="input-group">
+<label for="filtro-servico">Serviço</label>
+<select id="filtro-servico"></select>
+</div>
+</div>
+
+<button onclick="aplicarFiltros()">Aplicar filtros</button>
+<button class="btn-danger" onclick="limparFiltros()">Limpar filtros</button>
+</div>
+
+<div class="card">
+<h3>📊 Indicadores</h3>
+<div id="kpi-container"></div>
+<div id="admin-reports"></div>
+</div>
+
+<div class="card">
+<h3>📈 Gráficos</h3>
+
+<div class="chart-grid">
+<div class="chart-box full">
+<h4>📅 Produção por Dia</h4>
+<canvas id="chart-producao-dia"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>📦 Tempo por Depositante</h4>
+<canvas id="chart-depositante"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>🛠️ Tempo por Serviço</h4>
+<canvas id="chart-servico"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>👤 Tempo por Operador</h4>
+<canvas id="chart-usuario"></canvas>
+</div>
+
+<div class="chart-box">
+<h4>🏭 Tempo por Área</h4>
+<canvas id="chart-area"></canvas>
+</div>
+</div>
+</div>
+
+<div class="card">
+<button onclick="exportCSV()">📥 Exportar CSV</button>
+<button class="btn-danger" onclick="clearHistory()">Ocultar Todo Histórico</button>
+</div>
+
+<div class="card">
+<h3>Histórico de Atividades</h3>
+<div id="history-container"></div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
+
 let globalActivities=[];
 let filteredActivities=[];
 
@@ -512,3 +650,6 @@ link.download=`relatorio_atividades_${data}.csv`;
 
 link.click();
 }
+</script>
+</body>
+</html>
