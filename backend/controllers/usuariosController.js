@@ -1,4 +1,9 @@
 const usuariosService = require("../services/usuariosService");
+const {
+  validarLista,
+  validarUsuarioAdmin,
+  validarExecutante
+} = require("../validators/cadastroValidator");
 
 async function listarUsuarios(req,res){
   try{
@@ -6,7 +11,7 @@ async function listarUsuarios(req,res){
     return res.json({sucesso:true,usuarios});
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao listar usuários"
     });
@@ -17,12 +22,7 @@ async function cadastrarAdmin(req,res){
   try{
     const {nome,usuario,senha}=req.body;
 
-    if(!nome||!usuario||!senha){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Nome, usuário e senha são obrigatórios"
-      });
-    }
+    validarUsuarioAdmin({nome,usuario,senha});
 
     await usuariosService.cadastrarAdmin({nome,usuario,senha});
 
@@ -32,7 +32,7 @@ async function cadastrarAdmin(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar admin"
     });
@@ -43,12 +43,7 @@ async function cadastrarExecutante(req,res){
   try{
     const {nome,codigo}=req.body;
 
-    if(!nome||!codigo){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Nome e matrícula são obrigatórios"
-      });
-    }
+    validarExecutante({nome,codigo});
 
     await usuariosService.cadastrarExecutante({nome,codigo});
 
@@ -58,7 +53,7 @@ async function cadastrarExecutante(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar executante"
     });
@@ -69,12 +64,7 @@ async function cadastrarExecutantesEmMassa(req,res){
   try{
     const {usuarios}=req.body;
 
-    if(!Array.isArray(usuarios)||usuarios.length===0){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Lista vazia"
-      });
-    }
+    validarLista(usuarios,"Lista vazia");
 
     const total = await usuariosService.cadastrarExecutantesEmMassa(usuarios);
 
@@ -84,7 +74,7 @@ async function cadastrarExecutantesEmMassa(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar funcionários"
     });

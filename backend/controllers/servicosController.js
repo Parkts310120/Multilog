@@ -1,4 +1,8 @@
 const servicosService = require("../services/servicosService");
+const {
+  validarNome,
+  validarLista
+} = require("../validators/cadastroValidator");
 
 async function listarServicosAtivos(req,res){
   try{
@@ -10,7 +14,7 @@ async function listarServicosAtivos(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao carregar serviços"
     });
@@ -27,7 +31,7 @@ async function listarServicosAdmin(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao listar serviços"
     });
@@ -38,12 +42,7 @@ async function cadastrarServico(req,res){
   try{
     const {nome}=req.body;
 
-    if(!nome){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Nome do serviço é obrigatório"
-      });
-    }
+    validarNome(nome,"Nome do serviço");
 
     await servicosService.cadastrarServico(nome);
 
@@ -53,7 +52,7 @@ async function cadastrarServico(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar serviço"
     });
@@ -64,12 +63,7 @@ async function cadastrarServicosEmMassa(req,res){
   try{
     const {itens}=req.body;
 
-    if(!Array.isArray(itens)||itens.length===0){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Lista de serviços vazia"
-      });
-    }
+    validarLista(itens,"Lista de serviços vazia");
 
     const total = await servicosService.cadastrarServicosEmMassa(itens);
 
@@ -79,7 +73,7 @@ async function cadastrarServicosEmMassa(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar serviços em massa"
     });

@@ -1,4 +1,8 @@
 const depositantesService = require("../services/depositantesService");
+const {
+  validarNome,
+  validarLista
+} = require("../validators/cadastroValidator");
 
 async function listarDepositantesAtivos(req,res){
   try{
@@ -10,7 +14,7 @@ async function listarDepositantesAtivos(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao carregar depositantes"
     });
@@ -27,7 +31,7 @@ async function listarDepositantesAdmin(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao listar depositantes"
     });
@@ -38,12 +42,7 @@ async function cadastrarDepositante(req,res){
   try{
     const {nome}=req.body;
 
-    if(!nome){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Nome do depositante é obrigatório"
-      });
-    }
+    validarNome(nome,"Nome do depositante");
 
     await depositantesService.cadastrarDepositante(nome);
 
@@ -53,7 +52,7 @@ async function cadastrarDepositante(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar depositante"
     });
@@ -64,12 +63,7 @@ async function cadastrarDepositantesEmMassa(req,res){
   try{
     const {itens}=req.body;
 
-    if(!Array.isArray(itens)||itens.length===0){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Lista de depositantes vazia"
-      });
-    }
+    validarLista(itens,"Lista de depositantes vazia");
 
     const total = await depositantesService.cadastrarDepositantesEmMassa(itens);
 
@@ -79,7 +73,7 @@ async function cadastrarDepositantesEmMassa(req,res){
     });
   }catch(erro){
     console.error(erro);
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao cadastrar depositantes em massa"
     });
