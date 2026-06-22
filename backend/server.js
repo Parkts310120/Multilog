@@ -4,7 +4,8 @@ const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const { createClient } = require("@supabase/supabase-js");
-
+const loginRoutes = require("./routes/loginRoutes");
+const atividadesRoutes = require("./routes/atividadesRoutes");
 const app = express();
 
 app.use((req,res,next)=>{
@@ -22,6 +23,10 @@ app.use(cors());
 app.options(/.*/,cors());
 
 app.use(express.json());
+
+app.use("/api", loginRoutes);
+
+app.use("/api", atividadesRoutes);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -73,68 +78,6 @@ app.get("/api/status", (req, res) => {
     status: "ONLINE",
     data: new Date()
   });
-});
-
-// =========================
-// LOGIN
-// =========================
-
-app.post("/api/login", async (req, res) => {
-  try {
-    const { usuario, senha } = req.body;
-
-    if (!usuario || !senha) {
-      return res.status(400).json({
-        sucesso: false,
-        mensagem: "Usuário e senha obrigatórios"
-      });
-    }
-
-    const { data, error } = await supabase
-      .from("usuarios_sistema")
-      .select("*")
-      .eq("usuario", usuario)
-      .eq("senha", senha)
-      .eq("ativo", true)
-      .single();
-
-    if (error || !data) {
-      return res.status(401).json({
-        sucesso: false,
-        mensagem: "Usuário ou senha inválidos"
-      });
-    }
-
-    const token = jwt.sign(
-      {
-        id: data.id,
-        usuario: data.usuario,
-        nome: data.nome,
-        tipo: data.tipo
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "8h" }
-    );
-
-    return res.json({
-      sucesso: true,
-      token,
-      usuario: {
-        id: data.id,
-        nome: data.nome,
-        usuario: data.usuario,
-        tipo: data.tipo
-      }
-    });
-
-  } catch (erro) {
-    console.error(erro);
-
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: "Erro interno"
-    });
-  }
 });
 
 // =========================
@@ -197,182 +140,6 @@ app.get("/api/servicos", autenticarToken, async (req, res) => {
     return res.status(500).json({
       sucesso: false,
       mensagem: "Erro ao carregar serviços"
-    });
-  }
-});
-
-// =========================
-// SALVAR ATIVIDADE
-// =========================
-
-app.post("/api/atividades", autenticarToken, async (req, res) => {
-console.log("ATIVIDADE RECEBIDA:", req.body);
-  try {
-
-    const {
-    usuario,
-    depositante,
-    atividade,
-    area,
-    lote,
-    quantidade_esperada,
-    quantidade_realizada,
-    diferenca_quantidade,
-    unidade,
-    produtividade_hora,
-    meta_hora,
-    atingiu_meta,
-    observacao,
-    inicio,
-    fim,
-    duracao,
-    duracao_segundos
-    }=req.body;
-
-    const {data,error}=await supabase
-    .from("atividades")
-    .insert({
-    usuario,
-    depositante,
-    atividade,
-    area,
-    lote,
-    quantidade: quantidade_realizada,
-    quantidade_esperada,
-    quantidade_realizada,
-    diferenca_quantidade,
-    unidade,
-    produtividade_hora,
-    meta_hora,
-    atingiu_meta,
-    observacao,
-    inicio,
-    fim,
-    duracao,
-    duracao_segundos,
-    visivel: true
-    });
-
-    if (error) {
-      return res.status(500).json({
-        sucesso: false,
-        mensagem: error.message
-      });
-    }
-
-    return res.json({
-      sucesso: true,
-      mensagem: "Atividade salva com sucesso"
-    });
-
-  } catch (erro) {
-
-    console.error(erro);
-
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: "Erro interno"
-    });
-
-  }
-});
-
-// =========================
-// ADMIN - HISTÓRICO DE ATIVIDADES
-// =========================
-
-app.get("/api/admin/atividades", autenticarToken, autorizarAdmin, async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("atividades")
-      .select("*")
-      .eq("visivel", true)
-      .order("id", { ascending: false });
-
-    if (error) {
-      return res.status(500).json({
-        sucesso: false,
-        mensagem: error.message
-      });
-    }
-
-    return res.json({
-      sucesso: true,
-      atividades: data
-    });
-
-  } catch (erro) {
-    console.error(erro);
-
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: "Erro ao carregar histórico"
-    });
-  }
-});
-
-// =========================
-// ADMIN - OCULTAR UMA ATIVIDADE
-// =========================
-
-app.patch("/api/admin/atividades/:id/ocultar", autenticarToken, autorizarAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const { error } = await supabase
-      .from("atividades")
-      .update({ visivel: false })
-      .eq("id", id);
-
-    if (error) {
-      return res.status(500).json({
-        sucesso: false,
-        mensagem: error.message
-      });
-    }
-
-    return res.json({
-      sucesso: true,
-      mensagem: "Registro ocultado com sucesso"
-    });
-
-  } catch (erro) {
-    console.error(erro);
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: "Erro ao ocultar registro"
-    });
-  }
-});
-
-// =========================
-// ADMIN - OCULTAR TODO HISTÓRICO
-// =========================
-
-app.patch("/api/admin/atividades/ocultar-todos", autenticarToken, autorizarAdmin, async (req, res) => {
-  try {
-    const { error } = await supabase
-      .from("atividades")
-      .update({ visivel: false })
-      .eq("visivel", true);
-
-    if (error) {
-      return res.status(500).json({
-        sucesso: false,
-        mensagem: error.message
-      });
-    }
-
-    return res.json({
-      sucesso: true,
-      mensagem: "Histórico ocultado com sucesso"
-    });
-
-  } catch (erro) {
-    console.error(erro);
-    return res.status(500).json({
-      sucesso: false,
-      mensagem: "Erro ao ocultar histórico"
     });
   }
 });
