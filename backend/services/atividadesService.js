@@ -4,6 +4,7 @@ async function salvarAtividade(dados){
   const { error } = await supabase
     .from("atividades")
     .insert({
+      id_local: dados.id_local,
       usuario: dados.usuario,
       depositante: dados.depositante,
       atividade: dados.atividade,
