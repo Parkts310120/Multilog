@@ -7,6 +7,7 @@ const { createClient } = require("@supabase/supabase-js");
 const loginRoutes = require("./routes/loginRoutes");
 const atividadesRoutes = require("./routes/atividadesRoutes");
 const app = express();
+const depositantesRoutes = require("./routes/depositantesRoutes");
 
 app.use((req,res,next)=>{
   res.header("Access-Control-Allow-Origin","*");
@@ -27,6 +28,8 @@ app.use(express.json());
 app.use("/api", loginRoutes);
 
 app.use("/api", atividadesRoutes);
+
+app.use("/api", depositantesRoutes);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -280,22 +283,6 @@ app.post("/api/admin/executantes", autenticarToken, autorizarAdmin, async (req, 
 });
 
 // =========================
-// ADMIN - CADASTRAR DEPOSITANTE
-// =========================
-app.post("/api/admin/depositantes", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {nome}=req.body;
-    if(!nome)return res.status(400).json({sucesso:false,mensagem:"Nome do depositante é obrigatório"});
-    const {error}=await supabase.from("depositantes").insert({nome,ativo:true});
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-    return res.json({sucesso:true,mensagem:"Depositante cadastrado com sucesso"});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao cadastrar depositante"});
-  }
-});
-
-// =========================
 // ADMIN - CADASTRAR SERVIÇO
 // =========================
 app.post("/api/admin/servicos", autenticarToken, autorizarAdmin, async (req,res)=>{
@@ -312,20 +299,6 @@ app.post("/api/admin/servicos", autenticarToken, autorizarAdmin, async (req,res)
 });
 
 // =========================
-// ADMIN - LISTAR DEPOSITANTES
-// =========================
-app.get("/api/admin/depositantes", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {data,error}=await supabase.from("depositantes").select("id,nome,ativo").order("nome");
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-    return res.json({sucesso:true,depositantes:data});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao listar depositantes"});
-  }
-});
-
-// =========================
 // ADMIN - LISTAR SERVIÇOS
 // =========================
 app.get("/api/admin/servicos", autenticarToken, autorizarAdmin, async (req,res)=>{
@@ -336,23 +309,6 @@ app.get("/api/admin/servicos", autenticarToken, autorizarAdmin, async (req,res)=
   }catch(erro){
     console.error(erro);
     return res.status(500).json({sucesso:false,mensagem:"Erro ao listar serviços"});
-  }
-});
-
-// =========================
-// ADMIN - CADASTRAR DEPOSITANTES EM MASSA
-// =========================
-app.post("/api/admin/depositantes/massa", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {itens}=req.body;
-    if(!Array.isArray(itens)||itens.length===0)return res.status(400).json({sucesso:false,mensagem:"Lista de depositantes vazia"});
-    const registros=itens.map(nome=>({nome:String(nome).trim(),ativo:true})).filter(x=>x.nome);
-    const {error}=await supabase.from("depositantes").upsert(registros,{onConflict:"nome"});
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-    return res.json({sucesso:true,mensagem:`${registros.length} depositantes cadastrados`});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao cadastrar depositantes em massa"});
   }
 });
 
