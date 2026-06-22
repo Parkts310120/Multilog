@@ -1,9 +1,11 @@
 const atividadesService = require("../services/atividadesService");
+const { validarAtividade } = require("../validators/atividadeValidator");
 
 async function salvarAtividade(req,res){
   console.log("ATIVIDADE RECEBIDA:", req.body);
 
   try{
+    validarAtividade(req.body);
     await atividadesService.salvarAtividade(req.body);
 
     return res.json({
@@ -13,7 +15,7 @@ async function salvarAtividade(req,res){
   }catch(erro){
     console.error(erro);
 
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro interno"
     });
@@ -31,7 +33,7 @@ async function listarAtividades(req,res){
   }catch(erro){
     console.error(erro);
 
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao carregar histórico"
     });
@@ -49,7 +51,7 @@ async function ocultarAtividade(req,res){
   }catch(erro){
     console.error(erro);
 
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao ocultar registro"
     });
@@ -67,7 +69,7 @@ async function ocultarTodasAtividades(req,res){
   }catch(erro){
     console.error(erro);
 
-    return res.status(500).json({
+    return res.status(erro.statusCode || 500).json({
       sucesso:false,
       mensagem:erro.message || "Erro ao ocultar histórico"
     });
