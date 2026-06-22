@@ -303,9 +303,14 @@ async function stopTracking(){
     const produtividadeHora=horas>0 ? Number((quantidadeRealizada/horas).toFixed(2)) : 0;
     const metaHora=0;
     const atingiuMeta=false;
-
+    const idLocal =
+        crypto.randomUUID ?
+        crypto.randomUUID() :
+        `local_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    
     try{
         const resultado=await apiPost('/api/atividades',{
+            id_local:idLocal,
             usuario:currentSession.user,
             depositante:currentSession.depositor,
             atividade:currentSession.name,
