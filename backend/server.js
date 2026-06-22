@@ -9,6 +9,7 @@ const atividadesRoutes = require("./routes/atividadesRoutes");
 const app = express();
 const depositantesRoutes = require("./routes/depositantesRoutes");
 const servicosRoutes = require("./routes/servicosRoutes");
+const areasRoutes = require("./routes/areasRoutes");
 
 app.use((req,res,next)=>{
   res.header("Access-Control-Allow-Origin","*");
@@ -33,6 +34,8 @@ app.use("/api", atividadesRoutes);
 app.use("/api", depositantesRoutes);
 
 app.use("/api", servicosRoutes);
+
+app.use("/api", areasRoutes);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -367,91 +370,6 @@ app.get("/api/areas", autenticarToken, async (req,res)=>{
   }catch(erro){
     console.error(erro);
     return res.status(500).json({sucesso:false,mensagem:"Erro ao carregar áreas"});
-  }
-});
-
-// =========================
-// ADMIN - LISTAR ÁREAS
-// =========================
-app.get("/api/admin/areas", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {data,error}=await supabase
-      .from("areas_operacionais")
-      .select("id,nome,ativo")
-      .order("nome");
-
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-
-    return res.json({sucesso:true,areas:data});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao listar áreas"});
-  }
-});
-
-// =========================
-// ADMIN - CADASTRAR ÁREA
-// =========================
-app.post("/api/admin/areas", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {nome}=req.body;
-
-    if(!nome){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Nome da área é obrigatório"
-      });
-    }
-
-    const {error}=await supabase
-      .from("areas_operacionais")
-      .upsert({nome,ativo:true},{onConflict:"nome"});
-
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-
-    return res.json({
-      sucesso:true,
-      mensagem:"Área cadastrada com sucesso"
-    });
-
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao cadastrar área"});
-  }
-});
-
-// =========================
-// ADMIN - CADASTRAR ÁREAS EM MASSA
-// =========================
-app.post("/api/admin/areas/massa", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {itens}=req.body;
-
-    if(!Array.isArray(itens)||itens.length===0){
-      return res.status(400).json({
-        sucesso:false,
-        mensagem:"Lista de áreas vazia"
-      });
-    }
-
-    const registros=itens
-      .map(nome=>({nome:String(nome).trim(),ativo:true}))
-      .filter(x=>x.nome);
-
-    const {error}=await supabase
-      .from("areas_operacionais")
-      .upsert(registros,{onConflict:"nome"});
-
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-
-    return res.json({
-      sucesso:true,
-      mensagem:`${registros.length} áreas cadastradas`
-    });
-
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao cadastrar áreas"});
   }
 });
 
