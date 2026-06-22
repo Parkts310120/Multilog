@@ -9,3 +9,39 @@ input,textarea,select{width:100%;padding:12px;border-radius:8px;border:1px solid
 button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--primary);font-weight:bold;cursor:pointer;margin-bottom:12px}
 .box{background:#0f172a;padding:14px;border-radius:10px;border:1px solid var(--border);margin-bottom:20px}
 .secao-cadastro{display:none}
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+background:#1e293b;
+border:1px solid #334155;
+border-radius:12px;
+overflow:hidden;
+}
+
+th{
+background:#0f172a;
+color:#38bdf8;
+padding:14px;
+text-align:left;
+border-bottom:1px solid #334155;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #334155;
+color:#f8fafc;
+}
+
+tr:nth-child(even){
+background:#172033;
+}
+
+tr:hover{
+background:#243147;
+}
+
+.table-container{
+overflow-x:auto;
+margin-top:20px;
+}

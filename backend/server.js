@@ -8,6 +8,7 @@ const loginRoutes = require("./routes/loginRoutes");
 const atividadesRoutes = require("./routes/atividadesRoutes");
 const app = express();
 const depositantesRoutes = require("./routes/depositantesRoutes");
+const servicosRoutes = require("./routes/servicosRoutes");
 
 app.use((req,res,next)=>{
   res.header("Access-Control-Allow-Origin","*");
@@ -30,6 +31,8 @@ app.use("/api", loginRoutes);
 app.use("/api", atividadesRoutes);
 
 app.use("/api", depositantesRoutes);
+
+app.use("/api", servicosRoutes);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -279,53 +282,6 @@ app.post("/api/admin/executantes", autenticarToken, autorizarAdmin, async (req, 
       sucesso: false,
       mensagem: "Erro ao cadastrar executante"
     });
-  }
-});
-
-// =========================
-// ADMIN - CADASTRAR SERVIÇO
-// =========================
-app.post("/api/admin/servicos", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {nome}=req.body;
-    if(!nome)return res.status(400).json({sucesso:false,mensagem:"Nome do serviço é obrigatório"});
-    const {error}=await supabase.from("atividades_cadastro").insert({nome,ativo:true});
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-    return res.json({sucesso:true,mensagem:"Serviço cadastrado com sucesso"});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao cadastrar serviço"});
-  }
-});
-
-// =========================
-// ADMIN - LISTAR SERVIÇOS
-// =========================
-app.get("/api/admin/servicos", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {data,error}=await supabase.from("atividades_cadastro").select("id,nome,ativo").order("nome");
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-    return res.json({sucesso:true,servicos:data});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao listar serviços"});
-  }
-});
-
-// =========================
-// ADMIN - CADASTRAR SERVIÇOS EM MASSA
-// =========================
-app.post("/api/admin/servicos/massa", autenticarToken, autorizarAdmin, async (req,res)=>{
-  try{
-    const {itens}=req.body;
-    if(!Array.isArray(itens)||itens.length===0)return res.status(400).json({sucesso:false,mensagem:"Lista de serviços vazia"});
-    const registros=itens.map(nome=>({nome:String(nome).trim(),ativo:true})).filter(x=>x.nome);
-    const {error}=await supabase.from("atividades_cadastro").upsert(registros,{onConflict:"nome"});
-    if(error)return res.status(500).json({sucesso:false,mensagem:error.message});
-    return res.json({sucesso:true,mensagem:`${registros.length} serviços cadastrados`});
-  }catch(erro){
-    console.error(erro);
-    return res.status(500).json({sucesso:false,mensagem:"Erro ao cadastrar serviços em massa"});
   }
 });
 

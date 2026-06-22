@@ -175,14 +175,26 @@ const html=`
 <link rel="stylesheet" href="css/cadastros.css">
 </head>
 <body>
+<div class="container">
 <h1>${titulo}</h1>
 <button onclick="window.location.href='admin-cadastros.html'">⬅️ Voltar para Cadastros</button>
+
+<div class="card">
+<div class="table-container">
 <table>
-<thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
-<tbody>${linhas.map(l=>`<tr>${l.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody>
+<thead>
+<tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr>
+</thead>
+<tbody>
+${linhas.map(l=>`<tr>${l.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}
+</tbody>
 </table>
+</div>
+</div>
+</div>
 </body>
 </html>`;
+
 document.open();
 document.write(html);
 document.close();
