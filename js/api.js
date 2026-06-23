@@ -10,12 +10,24 @@ async function apiFetch(path, options = {}) {
         headers.Authorization = `Bearer ${token}`;
     }
 
-    const resposta = await fetch(`${API_BASE_URL}${path}`, {
-        ...options,
-        headers
-    });
+    let resposta;
 
-    const resultado = await resposta.json();
+    try {
+        resposta = await fetch(`${API_BASE_URL}${path}`, {
+            ...options,
+            headers
+        });
+    } catch (erro) {
+        throw new Error("API indisponível");
+    }
+
+    let resultado = {};
+
+    try {
+        resultado = await resposta.json();
+    } catch {
+        resultado = {};
+    }
 
     if (!resposta.ok) {
         throw new Error(resultado.mensagem || "Erro na API");

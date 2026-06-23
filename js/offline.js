@@ -48,3 +48,45 @@ async function contarOffline() {
     const pendentes = await listarOffline();
     return pendentes.length;
 }
+
+async function sincronizarPendentes() {
+
+    if (!navigator.onLine) return;
+
+    const pendentes = await listarOffline();
+
+    for (const atividade of pendentes) {
+
+        try {
+
+            await apiPost('/api/atividades', atividade);
+
+            await removerOffline(atividade.id_local);
+
+            console.log("Sincronizado:", atividade.id_local);
+
+            if (typeof atualizarIndicadorOffline === "function") {
+                await atualizarIndicadorOffline();
+            }
+
+        } catch (erro) {
+
+            console.log("Ainda offline");
+
+            break;
+
+        }
+
+    }
+
+    if (typeof atualizarIndicadorOffline === "function") {
+        await atualizarIndicadorOffline();
+    }
+
+}
+
+window.addEventListener("online", sincronizarPendentes);
+
+setInterval(() => {
+    sincronizarPendentes();
+}, 30000);

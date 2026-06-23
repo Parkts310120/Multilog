@@ -12,6 +12,16 @@ document.addEventListener('DOMContentLoaded',()=>{
     }else{
         showLoginScreen();
     }
+
+    atualizarIndicadorOffline();
+
+    setInterval(() => {
+        atualizarIndicadorOffline();
+    }, 5000);
+
+    window.addEventListener('online', atualizarIndicadorOffline);
+    window.addEventListener('offline', atualizarIndicadorOffline);    
+
 });
 
 async function handleLogin(){
@@ -49,6 +59,34 @@ function handleLogout(){
     localStorage.removeItem('multilog_usuario');
 
     showLoginScreen();
+}
+
+async function atualizarIndicadorOffline(){
+    const statusEl=document.getElementById('offline-status');
+
+    if(!statusEl)return;
+
+    let pendentes=0;
+
+    try{
+        pendentes=await contarOffline();
+    }catch(erro){
+        console.error('Erro ao contar atividades offline:', erro);
+    }
+
+    if(navigator.onLine){
+        if(pendentes>0){
+            statusEl.innerText=`🟢 Online (${pendentes} pendentes)`;
+        }else{
+            statusEl.innerText='🟢 Online';
+        }
+    }else{
+        if(pendentes>0){
+            statusEl.innerText=`🔴 Offline (${pendentes} pendentes)`;
+        }else{
+            statusEl.innerText='🔴 Offline';
+        }
+    }
 }
 
 function showLoginScreen(){
@@ -303,78 +341,86 @@ async function stopTracking(){
     const produtividadeHora=horas>0 ? Number((quantidadeRealizada/horas).toFixed(2)) : 0;
     const metaHora=0;
     const atingiuMeta=false;
+
     const idLocal =
         crypto.randomUUID ?
         crypto.randomUUID() :
         `local_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    
+
+    const dadosAtividade={
+        id_local:idLocal,
+        usuario:currentSession.user,
+        depositante:currentSession.depositor,
+        atividade:currentSession.name,
+        area:currentSession.area,
+        lote:currentSession.lote,
+        quantidade_esperada:currentSession.quantidadeEsperada,
+        quantidade_realizada:quantidadeRealizada,
+        diferenca_quantidade:diferencaQuantidade,
+        quantidade:quantidadeRealizada,
+        unidade:currentSession.unidade,
+        produtividade_hora:produtividadeHora,
+        observacao:observacao,
+        meta_hora:metaHora,
+        atingiu_meta:atingiuMeta,
+        inicio:startTime.toISOString(),
+        fim:endTime.toISOString(),
+        duracao:durationText,
+        duracao_segundos:diffSegundos
+    };
+
+    let salvoOffline=false;
+
     try{
-        const resultado=await apiPost('/api/atividades',{
-            id_local:idLocal,
-            usuario:currentSession.user,
-            depositante:currentSession.depositor,
-            atividade:currentSession.name,
-            area:currentSession.area,
-            lote:currentSession.lote,
-            quantidade_esperada:currentSession.quantidadeEsperada,
-            quantidade_realizada:quantidadeRealizada,
-            diferenca_quantidade:diferencaQuantidade,
-            quantidade:quantidadeRealizada,
-            unidade:currentSession.unidade,
-            produtividade_hora:produtividadeHora,
-            observacao:observacao,
-            meta_hora:metaHora,
-            atingiu_meta:atingiuMeta,
-            inicio:startTime.toISOString(),
-            fim:endTime.toISOString(),
-            duracao:durationText,
-            duracao_segundos:diffSegundos
-        });
-
+        const resultado=await apiPost('/api/atividades',dadosAtividade);
         console.log('RESPOSTA SALVAR ATIVIDADE:', resultado);
-
-        let mensagemFinal=`✅ Contagem concluída!\n\n⏱️ Tempo Total: ${durationText}\n✅ Realizado: ${quantidadeRealizada}`;
-
-        if(currentSession.temQuantidadeEsperada==='sim'){
-            mensagemFinal+=`\n📦 Esperado: ${currentSession.quantidadeEsperada}`;
-            mensagemFinal+=`\n🔁 Diferença: ${diferencaQuantidade}`;
-        }
-
-        mensagemFinal+=`\n📊 Produtividade: ${produtividadeHora} por hora`;
-
-        alert(mensagemFinal);
-
-        currentSession=null;
-
-        document.getElementById('depositor-name').disabled=false;
-        document.getElementById('activity-name').disabled=false;
-        document.getElementById('area-name').disabled=false;
-        document.getElementById('lote').disabled=false;
-        document.getElementById('tem-quantidade-esperada').disabled=false;
-        document.getElementById('quantidade-esperada').disabled=false;
-        document.getElementById('quantidade-realizada').disabled=false;
-        document.getElementById('unidade').disabled=false;
-        document.getElementById('observacao').disabled=false;
-
-        document.getElementById('btn-start').disabled=false;
-        document.getElementById('btn-end').disabled=true;
-
-        document.getElementById('grupo-quantidade-realizada').style.display='none';
-        document.getElementById('grupo-observacao').style.display='none';
-
-        document.getElementById('lote').value='';
-        document.getElementById('tem-quantidade-esperada').value='sim';
-        document.getElementById('quantidade-esperada').value='';
-        document.getElementById('quantidade-realizada').value='';
-        document.getElementById('observacao').value='';
-        document.getElementById('unidade').value='peça';
-
-        alternarQuantidadeEsperada();
-        updateStatusUI(false);
-
     }catch(erro){
         console.error(erro);
-        alert(erro.message||'Erro ao conectar com a API para salvar atividade.');
-        startLiveTimerUpdate(startTime);
+        await salvarOffline(dadosAtividade);
+        salvoOffline=true;
     }
+
+    let mensagemFinal=`✅ Contagem concluída!\n\n⏱️ Tempo Total: ${durationText}\n✅ Realizado: ${quantidadeRealizada}`;
+
+    if(currentSession.temQuantidadeEsperada==='sim'){
+        mensagemFinal+=`\n📦 Esperado: ${currentSession.quantidadeEsperada}`;
+        mensagemFinal+=`\n🔁 Diferença: ${diferencaQuantidade}`;
+    }
+
+    mensagemFinal+=`\n📊 Produtividade: ${produtividadeHora} por hora`;
+
+    if(salvoOffline){
+        mensagemFinal+=`\n\n⚠️ Sem conexão com a API. Atividade salva localmente e será sincronizada automaticamente.`;
+    }
+    
+    await atualizarIndicadorOffline();
+    alert(mensagemFinal);
+
+    currentSession=null;
+
+    document.getElementById('depositor-name').disabled=false;
+    document.getElementById('activity-name').disabled=false;
+    document.getElementById('area-name').disabled=false;
+    document.getElementById('lote').disabled=false;
+    document.getElementById('tem-quantidade-esperada').disabled=false;
+    document.getElementById('quantidade-esperada').disabled=false;
+    document.getElementById('quantidade-realizada').disabled=false;
+    document.getElementById('unidade').disabled=false;
+    document.getElementById('observacao').disabled=false;
+
+    document.getElementById('btn-start').disabled=false;
+    document.getElementById('btn-end').disabled=true;
+
+    document.getElementById('grupo-quantidade-realizada').style.display='none';
+    document.getElementById('grupo-observacao').style.display='none';
+
+    document.getElementById('lote').value='';
+    document.getElementById('tem-quantidade-esperada').value='sim';
+    document.getElementById('quantidade-esperada').value='';
+    document.getElementById('quantidade-realizada').value='';
+    document.getElementById('observacao').value='';
+    document.getElementById('unidade').value='peça';
+
+    alternarQuantidadeEsperada();
+    updateStatusUI(false);
 }
