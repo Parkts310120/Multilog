@@ -61,3 +61,17 @@ function apiDelete(path) {
         method: "DELETE"
     });
 }
+
+async function verificarStatusAPI() {
+    try {
+        const resposta = await fetch(`${API_BASE_URL}/api/status`);
+
+        if (!resposta.ok) {
+            return false;
+        }
+
+        return true;
+    } catch (erro) {
+        return false;
+    }
+}

@@ -67,6 +67,7 @@ async function atualizarIndicadorOffline(){
     if(!statusEl)return;
 
     let pendentes=0;
+    let apiOnline=false;
 
     try{
         pendentes=await contarOffline();
@@ -74,18 +75,34 @@ async function atualizarIndicadorOffline(){
         console.error('Erro ao contar atividades offline:', erro);
     }
 
-    if(navigator.onLine){
-        if(pendentes>0){
-            statusEl.innerText=`🟢 Online (${pendentes} pendentes)`;
-        }else{
-            statusEl.innerText='🟢 Online';
-        }
-    }else{
+    if(!navigator.onLine){
         if(pendentes>0){
             statusEl.innerText=`🔴 Offline (${pendentes} pendentes)`;
         }else{
             statusEl.innerText='🔴 Offline';
         }
+
+        return;
+    }
+
+    if(typeof verificarStatusAPI==="function"){
+        apiOnline=await verificarStatusAPI();
+    }
+
+    if(!apiOnline){
+        if(pendentes>0){
+            statusEl.innerText=`🟡 Sem API: contate o T.I (${pendentes} pendentes)`;
+        }else{
+            statusEl.innerText='🟡 Sem API: contate o T.I';
+        }
+
+        return;
+    }
+
+    if(pendentes>0){
+        statusEl.innerText=`🟢 Online (${pendentes} pendentes)`;
+    }else{
+        statusEl.innerText='🟢 Online';
     }
 }
 
