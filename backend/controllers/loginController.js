@@ -1,5 +1,6 @@
 const loginService = require("../services/loginService");
 const { validarLogin } = require("../validators/loginValidator");
+const auditoriaService = require("../services/auditoriaService");
 
 async function login(req, res) {
   try {
@@ -8,6 +9,17 @@ async function login(req, res) {
     validarLogin({ usuario, senha });
 
     const usuarioAutenticado = await loginService.autenticarUsuario(usuario, senha);
+
+    await auditoriaService.registrarLog({
+    usuario: usuarioAutenticado.usuario,
+    acao: "LOGIN",
+    tabela: "usuarios_sistema",
+    registro_id: String(usuarioAutenticado.id),
+    depois: {
+        nome: usuarioAutenticado.nome,
+        tipo: usuarioAutenticado.tipo
+    }
+    });
 
     const token = loginService.gerarToken(usuarioAutenticado);
 

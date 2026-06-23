@@ -9,6 +9,7 @@ const depositantesRoutes = require("./routes/depositantesRoutes");
 const servicosRoutes = require("./routes/servicosRoutes");
 const areasRoutes = require("./routes/areasRoutes");
 const usuariosRoutes = require("./routes/usuariosRoutes");
+const auditoriaRoutes = require("./routes/auditoriaRoutes");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api", depositantesRoutes);
 app.use("/api", servicosRoutes);
 app.use("/api", areasRoutes);
 app.use("/api", usuariosRoutes);
+app.use("/api", auditoriaRoutes);
 
 // =========================
 // STATUS API

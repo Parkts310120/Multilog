@@ -1,4 +1,5 @@
 const atividadesService = require("../services/atividadesService");
+const auditoriaService = require("../services/auditoriaService");
 const { validarAtividade } = require("../validators/atividadeValidator");
 
 async function salvarAtividade(req,res){
@@ -6,7 +7,16 @@ async function salvarAtividade(req,res){
 
   try{
     validarAtividade(req.body);
+
     await atividadesService.salvarAtividade(req.body);
+
+    await auditoriaService.registrarLog({
+      usuario: req.body.usuario || req.usuario?.usuario || "sistema",
+      acao: "SALVAR_ATIVIDADE",
+      tabela: "atividades",
+      registro_id: req.body.id_local ? String(req.body.id_local) : null,
+      depois: req.body
+    });
 
     return res.json({
       sucesso:true,
@@ -44,6 +54,13 @@ async function ocultarAtividade(req,res){
   try{
     await atividadesService.ocultarAtividade(req.params.id);
 
+    await auditoriaService.registrarLog({
+      usuario: req.usuario?.usuario || "sistema",
+      acao: "OCULTAR_ATIVIDADE",
+      tabela: "atividades",
+      registro_id: String(req.params.id)
+    });
+
     return res.json({
       sucesso:true,
       mensagem:"Registro ocultado com sucesso"
@@ -61,6 +78,12 @@ async function ocultarAtividade(req,res){
 async function ocultarTodasAtividades(req,res){
   try{
     await atividadesService.ocultarTodasAtividades();
+
+    await auditoriaService.registrarLog({
+      usuario: req.usuario?.usuario || "sistema",
+      acao: "OCULTAR_TODAS_ATIVIDADES",
+      tabela: "atividades"
+    });
 
     return res.json({
       sucesso:true,

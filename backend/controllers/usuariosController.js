@@ -1,4 +1,5 @@
 const usuariosService = require("../services/usuariosService");
+const auditoriaService = require("../services/auditoriaService");
 const {
   validarLista,
   validarUsuarioAdmin,
@@ -26,6 +27,17 @@ async function cadastrarAdmin(req,res){
 
     await usuariosService.cadastrarAdmin({nome,usuario,senha});
 
+    await auditoriaService.registrarLog({
+      usuario: req.usuario?.usuario || "sistema",
+      acao: "CADASTRAR_ADMIN",
+      tabela: "usuarios_sistema",
+      depois: {
+        nome,
+        usuario,
+        tipo: "admin"
+      }
+    });
+
     return res.json({
       sucesso:true,
       mensagem:"Admin cadastrado com sucesso"
@@ -47,6 +59,16 @@ async function cadastrarExecutante(req,res){
 
     await usuariosService.cadastrarExecutante({nome,codigo});
 
+    await auditoriaService.registrarLog({
+      usuario: req.usuario?.usuario || "sistema",
+      acao: "CADASTRAR_EXECUTANTE",
+      tabela: "executantes",
+      depois: {
+        nome,
+        codigo
+      }
+    });
+
     return res.json({
       sucesso:true,
       mensagem:`Executante cadastrado com sucesso. Login: ${codigo} | Senha: ${codigo}`
@@ -67,6 +89,16 @@ async function cadastrarExecutantesEmMassa(req,res){
     validarLista(usuarios,"Lista vazia");
 
     const total = await usuariosService.cadastrarExecutantesEmMassa(usuarios);
+
+    await auditoriaService.registrarLog({
+      usuario: req.usuario?.usuario || "sistema",
+      acao: "CADASTRAR_EXECUTANTES_EM_MASSA",
+      tabela: "executantes",
+      depois: {
+        total,
+        usuarios
+      }
+    });
 
     return res.json({
       sucesso:true,
