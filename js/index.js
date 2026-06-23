@@ -37,13 +37,37 @@ async function handleLogin(){
 
         localStorage.setItem('multilog_token',resultado.token);
         localStorage.setItem('multilog_usuario',JSON.stringify(resultado.usuario));
+        localStorage.setItem('multilog_ultimo_login', userIn);
+        localStorage.setItem('multilog_usuario_offline',JSON.stringify(resultado.usuario));
+        localStorage.setItem('multilog_senha_offline', passIn);
 
         usuarioLogado=resultado.usuario;
         errorEl.style.display='none';
         showAppScreen();
 
     }catch(erro){
-        errorEl.innerText=erro.message||'Usuário ou senha incorretos!';
+        const ultimoLogin = localStorage.getItem('multilog_ultimo_login');
+        const usuarioSalvo = localStorage.getItem('multilog_usuario_offline');
+        const senhaOffline = localStorage.getItem('multilog_senha_offline');
+        if(
+            usuarioSalvo &&
+            ultimoLogin &&
+            senhaOffline &&
+            userIn === ultimoLogin &&
+            passIn === senhaOffline
+        ){
+            usuarioLogado = JSON.parse(usuarioSalvo);
+            errorEl.style.display='none';
+            alert('⚠️ Login offline. Utilizando último usuário autenticado.');
+            showAppScreen();
+            return;
+        }
+
+        if(!navigator.onLine || erro.message === "API indisponível" || erro.message === "Erro na API"){
+            errorEl.innerText='Sem API. Login offline não autorizado para este usuário ou senha.';
+        }else{
+            errorEl.innerText=erro.message||'Usuário ou senha incorretos!';
+        }
         errorEl.style.display='block';
         console.error(erro);
     }
@@ -108,6 +132,24 @@ async function atualizarIndicadorOffline(){
     }else{
         statusEl.innerText='🟢 Online';
     }
+
+    if(usuarioLogado && usuarioLogado.tipo !== 'admin'){
+        const depSelect=document.getElementById('depositor-name');
+        const ativSelect=document.getElementById('activity-name');
+        const areaSelect=document.getElementById('area-name');
+
+        const selectsVazios =
+            depSelect &&
+            ativSelect &&
+            areaSelect &&
+            depSelect.options.length === 0 &&
+            ativSelect.options.length === 0 &&
+            areaSelect.options.length === 0;
+
+        if(selectsVazios){
+            await carregarCadastros();
+        }
+    }
 }
 
 function showLoginScreen(){
@@ -168,6 +210,10 @@ async function initAppLogic(){
 }
 
 async function carregarCadastros(){
+    const depSelect=document.getElementById('depositor-name');
+    const ativSelect=document.getElementById('activity-name');
+    const areaSelect=document.getElementById('area-name');
+
     try{
         const [resultDepositantes,resultServicos,resultAreas]=await Promise.all([
             apiGet('/api/depositantes'),
@@ -179,44 +225,68 @@ async function carregarCadastros(){
         const servicos=resultServicos.servicos;
         const areas=resultAreas.areas;
 
-        const depSelect=document.getElementById('depositor-name');
-        const ativSelect=document.getElementById('activity-name');
-        const areaSelect=document.getElementById('area-name');
+        await salvarCadastrosOffline('depositantes', depositantes);
+        await salvarCadastrosOffline('servicos', servicos);
+        await salvarCadastrosOffline('areas', areas);
 
-        depSelect.innerHTML='';
-        ativSelect.innerHTML='';
-        areaSelect.innerHTML='';
-
-        if(!depositantes||depositantes.length===0){
-            depSelect.innerHTML='<option value="">Nenhum depositante cadastrado</option>';
-        }else{
-            depSelect.innerHTML='<option value="">Selecione o depositante</option>';
-            depositantes.forEach(d=>{
-                depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
-            });
-        }
-
-        if(!servicos||servicos.length===0){
-            ativSelect.innerHTML='<option value="">Nenhum serviço cadastrado</option>';
-        }else{
-            ativSelect.innerHTML='<option value="">Selecione o serviço</option>';
-            servicos.forEach(s=>{
-                ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
-            });
-        }
-
-        if(!areas||areas.length===0){
-            areaSelect.innerHTML='<option value="">Nenhuma área cadastrada</option>';
-        }else{
-            areaSelect.innerHTML='<option value="">Selecione a área</option>';
-            areas.forEach(a=>{
-                areaSelect.innerHTML+=`<option value="${a.nome}">${a.nome}</option>`;
-            });
-        }
+        preencherSelectsCadastros(depositantes, servicos, areas);
 
     }catch(erro){
         console.error(erro);
-        alert(erro.message||'Erro ao conectar com a API para carregar cadastros.');
+
+        const depositantes=await carregarCadastrosOffline('depositantes');
+        const servicos=await carregarCadastrosOffline('servicos');
+        const areas=await carregarCadastrosOffline('areas');
+
+        preencherSelectsCadastros(depositantes, servicos, areas);
+
+        if(
+            depositantes.length > 0 ||
+            servicos.length > 0 ||
+            areas.length > 0
+        ){
+            console.log("Cadastros carregados do cache local.");
+        }else{
+            alert("Sem conexão com a API e nenhum cadastro foi encontrado no dispositivo.");
+        }
+
+    }
+}
+
+function preencherSelectsCadastros(depositantes, servicos, areas){
+    const depSelect=document.getElementById('depositor-name');
+    const ativSelect=document.getElementById('activity-name');
+    const areaSelect=document.getElementById('area-name');
+
+    depSelect.innerHTML='';
+    ativSelect.innerHTML='';
+    areaSelect.innerHTML='';
+
+    if(!depositantes||depositantes.length===0){
+        depSelect.innerHTML='<option value="">Nenhum depositante disponível</option>';
+    }else{
+        depSelect.innerHTML='<option value="">Selecione o depositante</option>';
+        depositantes.forEach(d=>{
+            depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
+        });
+    }
+
+    if(!servicos||servicos.length===0){
+        ativSelect.innerHTML='<option value="">Nenhum serviço disponível</option>';
+    }else{
+        ativSelect.innerHTML='<option value="">Selecione o serviço</option>';
+        servicos.forEach(s=>{
+            ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
+        });
+    }
+
+    if(!areas||areas.length===0){
+        areaSelect.innerHTML='<option value="">Nenhuma área disponível</option>';
+    }else{
+        areaSelect.innerHTML='<option value="">Selecione a área</option>';
+        areas.forEach(a=>{
+            areaSelect.innerHTML+=`<option value="${a.nome}">${a.nome}</option>`;
+        });
     }
 }
 

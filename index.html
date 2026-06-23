@@ -6,6 +6,8 @@
 <title>Rastreador de Atividades Pro</title>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/app.css">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f172a">
 </head>
 
 <body>
@@ -118,6 +120,16 @@
 <script src="/js/auth.js"></script>
 <script src="/js/offline.js"></script>
 <script src="/js/index.js"></script>
-
+<!--
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(() => console.log("Service Worker registrado"))
+            .catch(erro => console.error("Erro ao registrar Service Worker:", erro));
+    });
+}
+</script>
+-->
 </body>
 </html>

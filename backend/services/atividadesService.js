@@ -27,8 +27,20 @@ async function salvarAtividade(dados){
     });
 
   if(error){
+    if(error.code === "23505"){
+      return {
+        duplicado: true,
+        mensagem: "Atividade já sincronizada anteriormente."
+      };
+    }
+
     throw new Error(error.message);
   }
+
+  return {
+    duplicado: false,
+    mensagem: "Atividade salva com sucesso."
+  };
 }
 
 async function listarAtividadesVisiveis(){
