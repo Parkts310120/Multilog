@@ -101,6 +101,10 @@ async function atualizarIndicadorOffline(){
 
     if(pendentes>0){
         statusEl.innerText=`🟢 Online (${pendentes} pendentes)`;
+
+        if(typeof sincronizarPendentes==="function"){
+            await sincronizarPendentes();
+        }
     }else{
         statusEl.innerText='🟢 Online';
     }
