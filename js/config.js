@@ -1,1 +1,1 @@
-const API_BASE_URL = "";
+const API_BASE_URL = "https://multilog-backend.onrender.com";
