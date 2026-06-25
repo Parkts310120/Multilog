@@ -4,38 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rastreador de Atividades Pro</title>
-<style>
-:root{--bg-color:#0f172a;--card-bg:#1e293b;--primary:#38bdf8;--primary-hover:#0ea5e9;--success:#22c55e;--success-hover:#16a34a;--danger:#ef4444;--danger-hover:#dc2626;--text:#f8fafc;--text-secondary:#94a3b8;--border:#334155}
-*,*::before,*::after{box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:var(--bg-color);color:var(--text);margin:0;padding:16px;display:flex;flex-direction:column;align-items:center;min-height:100vh}
-.container{width:100%;max-width:450px}
-h1{text-align:center;font-size:1.6rem;color:var(--primary);margin-bottom:4px;font-weight:700}
-.subtitle{text-align:center;font-size:.85rem;color:var(--text-secondary);margin-bottom:24px}
-.card{background-color:var(--card-bg);padding:20px;border-radius:16px;box-shadow:0 10px 15px -3px rgba(0,0,0,.3);margin-bottom:24px;border:1px solid var(--border)}
-.input-group{margin-bottom:16px}
-label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em}
-select,input[type="text"],input[type="password"]{width:100%;padding:12px;border-radius:8px;border:1px solid var(--border);background-color:#0f172a;color:var(--text);font-size:1rem;transition:border-color .2s}
-select:focus,input:focus{outline:none;border-color:var(--primary)}
-.status-panel{background-color:#0f172a;padding:12px;border-radius:8px;margin-bottom:16px;border:1px dashed var(--border);text-align:center}
-.status-badge{display:inline-block;padding:4px 8px;border-radius:12px;font-size:.75rem;font-weight:bold;text-transform:uppercase}
-.status-free{background-color:#334155;color:#cbd5e1}
-.status-running{background-color:#1e3a8a;color:#93c5fd}
-.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
-button{width:100%;padding:14px;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:bold;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-start{background-color:var(--success)}
-.btn-start:hover:not(:disabled){background-color:var(--success-hover)}
-.btn-end{background-color:var(--danger)}
-.btn-end:hover:not(:disabled){background-color:var(--danger-hover)}
-.btn-primary{background-color:var(--primary);color:#0f172a;margin-bottom:12px}
-.btn-primary:hover{background-color:var(--primary-hover)}
-button:disabled{opacity:.4;cursor:not-allowed}
-.error-message{color:var(--danger);font-size:.85rem;margin-top:8px;text-align:center;display:none}
-.logout-link{text-align:center;margin-top:16px;font-size:.85rem;color:var(--text-secondary);cursor:pointer;text-decoration:underline}
-</style>
+<link rel="manifest" href="/assets/manifest-B329fT_3.json">
+<meta name="theme-color" content="#0f172a">
+  <link rel="stylesheet" crossorigin href="/assets/index-C6jXwcJO.css">
 </head>
+
 <body>
 
-<div class="container" id="login-screen">
+<div class="container" id="login-screen" style="display:none;">
     <h1>Acesso Restrito</h1>
     <div class="subtitle">Faça login para acessar o sistema</div>
     <div class="card">
@@ -56,6 +32,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
     <h1 id="app-title">Registro de Atividade</h1>
     <div class="subtitle" id="app-subtitle">Selecione os dados cadastrados e registre o tempo</div>
 
+    <div id="offline-status" style="margin: 12px 0; font-weight: bold;">
+        🟢 Online
+    </div>
+
     <div class="card" id="tracking-card">
         <div class="input-group">
             <label>Executante</label>
@@ -70,6 +50,44 @@ button:disabled{opacity:.4;cursor:not-allowed}
         <div class="input-group">
             <label for="activity-name">Selecione o Serviço</label>
             <select id="activity-name"></select>
+        </div>
+
+        <div class="input-group">
+            <label for="area-name">Selecione a Área</label>
+            <select id="area-name"></select>
+        </div>
+
+        <div class="input-group">
+            <label for="lote">Lote / NF / OS</label>
+            <input type="text" id="lote" placeholder="Ex: NF 12345, OS 987, Lote A">
+        </div>
+
+        <div class="input-group">
+            <label for="tem-quantidade-esperada">Tem quantidade esperada?</label>
+            <select id="tem-quantidade-esperada" onchange="alternarQuantidadeEsperada()">
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+            </select>
+        </div>
+
+        <div class="input-group" id="grupo-quantidade-esperada">
+            <label for="quantidade-esperada">Quantidade esperada</label>
+            <input type="number" id="quantidade-esperada" min="0" step="1" placeholder="Quantidade prevista">
+        </div>
+
+        <div class="input-group">
+            <label for="unidade">Unidade</label>
+            <input type="text" id="unidade" value="peça" placeholder="Ex: peça, pallet, caixa">
+        </div>
+
+        <div class="input-group" id="grupo-quantidade-realizada" style="display:none;">
+            <label for="quantidade-realizada">Quantidade realizada</label>
+            <input type="number" id="quantidade-realizada" min="0" step="1" placeholder="Quantidade contada">
+        </div>
+
+        <div class="input-group" id="grupo-observacao" style="display:none;">
+            <label for="observacao">Observação</label>
+            <textarea id="observacao" rows="3" placeholder="Ex: divergência, avaria, falta, sobra"></textarea>
         </div>
 
         <div class="status-panel">
@@ -88,278 +106,30 @@ button:disabled{opacity:.4;cursor:not-allowed}
     </div>
 
     <div id="admin-buttons" style="margin-bottom:24px;display:none;">
-        <button class="btn-primary" onclick="window.location.href='admin-historico.html'">🔐 Área Admin - Histórico</button>
-        <button class="btn-primary" onclick="window.location.href='admin-cadastros.html'">⚙️ Área Admin - Cadastros</button>
+        <button class="btn-primary" onclick="window.location.href='/admin-dashboard.html'">📊 Área Admin - Dashboard</button>
+        <button class="btn-primary" onclick="window.location.href='/admin-historico.html'">🔐 Área Admin - Histórico</button>
+        <button class="btn-primary" onclick="window.location.href='/admin-cadastros.html'">⚙️ Área Admin - Cadastros</button>    
+        <button class="btn-primary" onclick="window.location.href='/admin-auditoria.html'">📜 Área Admin - Auditoria</button>
     </div>
 
     <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/offline.js"></script>
+<script src="/js/index.js"></script>
+<!--
 <script>
-const API_BASE_URL="https://curly-dollop-7j7vg9g5rx72rxpj-3000.app.github.dev";
-const SUPABASE_URL="https://pnoabqubkspbhluqdfwb.supabase.co";
-const SUPABASE_KEY="sb_publishable_QzosVNC7kpO-APXfZg98UQ_AAveOUtZ";
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-let usuarioLogado=null;
-let currentSession=null;
-let timerInterval=null;
-
-document.addEventListener('DOMContentLoaded',()=>{showLoginScreen();});
-
-async function handleLogin(){
-    const userIn=document.getElementById('login-username').value.trim();
-    const passIn=document.getElementById('login-password').value.trim();
-    const errorEl=document.getElementById('login-error');
-
-    try{
-        const resposta=await fetch(`${API_BASE_URL}/api/login`,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({usuario:userIn,senha:passIn})
-        });
-
-        const resultado=await resposta.json();
-
-        if(!resposta.ok||!resultado.sucesso){
-            errorEl.innerText=resultado.mensagem||'Usuário ou senha incorretos!';
-            errorEl.style.display='block';
-            return;
-        }
-
-        localStorage.setItem('multilog_token',resultado.token);
-        localStorage.setItem('multilog_usuario',JSON.stringify(resultado.usuario));
-
-        usuarioLogado=resultado.usuario;
-        errorEl.style.display='none';
-        showAppScreen();
-
-    }catch(erro){
-        errorEl.innerText='Erro ao conectar com a API.';
-        errorEl.style.display='block';
-        console.error(erro);
-    }
-}
-
-function handleLogout(){
-    if(currentSession){
-        alert('Finalize a atividade em andamento antes de sair!');
-        return;
-    }
-    showLoginScreen();
-}
-
-function showLoginScreen(){
-    usuarioLogado=null;
-    currentSession=null;
-    clearInterval(timerInterval);
-    document.getElementById('login-screen').style.display='block';
-    document.getElementById('app-screen').style.display='none';
-    document.getElementById('admin-buttons').style.display='none';
-    document.getElementById('tracking-card').style.display='block';
-}
-
-function showAppScreen(){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    document.getElementById('executante-logado').value = usuarioLogado.nome + ' (' + usuarioLogado.usuario + ')';
-    const isAdmin=usuarioLogado&&usuarioLogado.tipo==='admin';
-
-    if(isAdmin){
-        document.getElementById('app-title').innerText='Portal Administrativo';
-        document.getElementById('app-subtitle').innerText='Acesse histórico, relatórios e cadastros';
-        document.getElementById('tracking-card').style.display='none';
-        document.getElementById('admin-buttons').style.display='block';
-    }else{
-        document.getElementById('app-title').innerText='Registro de Atividade';
-        document.getElementById('app-subtitle').innerText='Selecione os dados cadastrados e registre o tempo';
-        document.getElementById('tracking-card').style.display='block';
-        document.getElementById('admin-buttons').style.display='none';
-        initAppLogic();
-    }
-}
-
-async function initAppLogic(){
-    document.getElementById('depositor-name').disabled=false;
-    document.getElementById('activity-name').disabled=false;
-    document.getElementById('btn-start').disabled=false;
-    document.getElementById('btn-end').disabled=true;
-
-    clearInterval(timerInterval);
-    updateStatusUI(false);
-
-    await carregarCadastros();
-}
-
-async function carregarCadastros(){
-    try{
-        const token=localStorage.getItem('multilog_token');
-
-        const [respDepositantes,respServicos]=await Promise.all([
-            fetch(`${API_BASE_URL}/api/depositantes`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            }),
-            fetch(`${API_BASE_URL}/api/servicos`,{
-                headers:{'Authorization':`Bearer ${token}`}
-            })
-        ]);
-
-        const resultDepositantes=await respDepositantes.json();
-        const resultServicos=await respServicos.json();
-
-        if(!respDepositantes.ok||!resultDepositantes.sucesso){
-            alert(resultDepositantes.mensagem||'Erro ao carregar depositantes.');
-            return;
-        }
-
-        if(!respServicos.ok||!resultServicos.sucesso){
-            alert(resultServicos.mensagem||'Erro ao carregar serviços.');
-            return;
-        }
-
-        const depositantes=resultDepositantes.depositantes;
-        const servicos=resultServicos.servicos;
-
-        const depSelect=document.getElementById('depositor-name');
-        const ativSelect=document.getElementById('activity-name');
-
-        depSelect.innerHTML='';
-        ativSelect.innerHTML='';
-
-        if(!depositantes||depositantes.length===0){
-            depSelect.innerHTML='<option value="">Nenhum depositante cadastrado</option>';
-        }else{
-            depositantes.forEach(d=>{
-                depSelect.innerHTML+=`<option value="${d.nome}">${d.nome}</option>`;
-            });
-        }
-
-        if(!servicos||servicos.length===0){
-            ativSelect.innerHTML='<option value="">Nenhum serviço cadastrado</option>';
-        }else{
-            servicos.forEach(s=>{
-                ativSelect.innerHTML+=`<option value="${s.nome}">${s.nome}</option>`;
-            });
-        }
-
-    }catch(erro){
-        console.error(erro);
-        alert('Erro ao conectar com a API para carregar cadastros.');
-    }
-}
-
-function updateStatusUI(isRunning){
-    const container=document.getElementById('status-container');
-    const timerEl=document.getElementById('live-timer');
-
-    if(isRunning){
-        container.innerHTML='<span class="status-badge status-running">Atividade em andamento...</span>';
-        timerEl.style.display='block';
-    }else{
-        container.innerHTML='<span class="status-badge status-free">Pronto para iniciar</span>';
-        timerEl.style.display='none';
-        timerEl.innerText='00:00:00';
-    }
-}
-
-function startLiveTimerUpdate(startTime){
-    const timerEl=document.getElementById('live-timer');
-    clearInterval(timerInterval);
-
-    function update(){
-        const diff=new Date()-startTime;
-        const hrs=Math.floor(diff/3600000).toString().padStart(2,'0');
-        const mins=Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
-        const secs=Math.floor((diff%60000)/1000).toString().padStart(2,'0');
-        timerEl.innerText=`${hrs}:${mins}:${secs}`;
-    }
-
-    update();
-    timerInterval=setInterval(update,1000);
-}
-
-function startTracking(){
-    const user=usuarioLogado.nome + ' (' + usuarioLogado.usuario + ')';
-    const depositor=document.getElementById('depositor-name').value;
-    const name=document.getElementById('activity-name').value;
-    const startTime=new Date();
-
-    if(!user||!depositor||!name){
-        alert('Selecione executante, depositante e serviço.');
-        return;
-    }
-
-    currentSession={user,depositor,name,startTime:startTime.toISOString()};
-
-    document.getElementById('depositor-name').disabled=true;
-    document.getElementById('activity-name').disabled=true;
-    document.getElementById('btn-start').disabled=true;
-    document.getElementById('btn-end').disabled=false;
-
-    startLiveTimerUpdate(startTime);
-    updateStatusUI(true);
-}
-
-async function stopTracking(){
-    if(!currentSession)return;
-
-    clearInterval(timerInterval);
-
-    const endTime=new Date();
-    const startTime=new Date(currentSession.startTime);
-    const diffMs=endTime-startTime;
-    const diffMins=Math.round(diffMs/60000);
-
-    let durationText='';
-
-    if(diffMins<1){
-        durationText=`${Math.round(diffMs/1000)} segundos`;
-    }else if(diffMins<60){
-        durationText=`${diffMins} min`;
-    }else{
-        durationText=`${Math.floor(diffMins/60)}h e ${diffMins%60}min`;
-    }
-
-    const token=localStorage.getItem('multilog_token');
-
-    const resposta=await fetch(`${API_BASE_URL}/api/atividades`,{
-        method:'POST',
-        headers:{
-            'Content-Type':'application/json',
-            'Authorization':`Bearer ${token}`
-        },
-        body:JSON.stringify({
-            usuario:currentSession.user,
-            depositante:currentSession.depositor,
-            atividade:currentSession.name,
-            inicio:startTime.toISOString(),
-            fim:endTime.toISOString(),
-            duracao:durationText,
-            duracao_segundos:Math.round(diffMs/1000)
-        })
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(() => console.log("Service Worker registrado"))
+            .catch(erro => console.error("Erro ao registrar Service Worker:", erro));
     });
-
-    const resultado=await resposta.json();
-
-    console.log('RESPOSTA SALVAR ATIVIDADE:', resposta.status, resultado);
-
-    if(!resposta.ok||!resultado.sucesso){
-        alert('Erro ao salvar atividade: '+(resultado.mensagem||'Erro desconhecido'));
-        return;
-    }
-
-    currentSession=null;
-
-    document.getElementById('depositor-name').disabled=false;
-    document.getElementById('activity-name').disabled=false;
-    document.getElementById('btn-start').disabled=false;
-    document.getElementById('btn-end').disabled=true;
-
-    updateStatusUI(false);
-
-    alert(`✅ Serviço concluído!\n\n⏱️ Tempo Total Utilizado: ${durationText}`);
 }
 </script>
+-->
 </body>
 </html>

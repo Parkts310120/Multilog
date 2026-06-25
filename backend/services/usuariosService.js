@@ -1,4 +1,5 @@
 const supabase = require("../config/supabase");
+const { gerarHashSenha } = require("../utils/password");
 
 async function listarUsuarios(){
   const { data, error } = await supabase
@@ -12,12 +13,14 @@ async function listarUsuarios(){
 }
 
 async function cadastrarAdmin({nome,usuario,senha}){
+  const senhaHash = await gerarHashSenha(senha);
+
   const { error } = await supabase
     .from("usuarios_sistema")
     .upsert({
       nome,
       usuario,
-      senha,
+      senha: senhaHash,
       tipo:"admin",
       ativo:true
     },{onConflict:"usuario"});
@@ -26,6 +29,8 @@ async function cadastrarAdmin({nome,usuario,senha}){
 }
 
 async function cadastrarExecutante({nome,codigo}){
+  const senhaHash = await gerarHashSenha(codigo);
+
   const e1 = await supabase
     .from("executantes")
     .insert({nome,codigo});
@@ -37,7 +42,7 @@ async function cadastrarExecutante({nome,codigo}){
     .upsert({
       nome,
       usuario:codigo,
-      senha:codigo,
+      senha:senhaHash,
       tipo:"funcionario",
       ativo:true
     },{onConflict:"usuario"});
@@ -51,13 +56,15 @@ async function cadastrarExecutantesEmMassa(usuarios){
     codigo:u.usuario
   }));
 
-  const usuariosSistema = usuarios.map(u=>({
-    nome:u.nome,
-    usuario:u.usuario,
-    senha:u.senha,
-    tipo:"funcionario",
-    ativo:true
-  }));
+  const usuariosSistema = await Promise.all(
+    usuarios.map(async u=>({
+      nome:u.nome,
+      usuario:u.usuario,
+      senha:await gerarHashSenha(u.senha),
+      tipo:"funcionario",
+      ativo:true
+    }))
+  );
 
   const e1 = await supabase
     .from("executantes")
