@@ -1,0 +1,42 @@
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(15, 23, 42, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.loading-overlay.ativo {
+    display: flex;
+}
+
+.loading-box {
+    background: #ffffff;
+    color: #0f172a;
+    padding: 24px 28px;
+    border-radius: 14px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.loading-spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid #dbeafe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: loadingGirar 0.8s linear infinite;
+}
+
+@keyframes loadingGirar {
+    to {
+        transform: rotate(360deg);
+    }
+}

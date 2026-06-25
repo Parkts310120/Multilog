@@ -60,7 +60,7 @@ async function handleLogin(){
         ){
             usuarioLogado = JSON.parse(usuarioSalvo);
             errorEl.style.display='none';
-            alert('⚠️ Login offline. Utilizando último usuário autenticado.');
+            Toast.warning('Login offline. Utilizando último usuário autenticado.');
             showAppScreen();
             return;
         }
@@ -77,7 +77,7 @@ async function handleLogin(){
 
 function handleLogout(){
     if(currentSession){
-        alert('Finalize a atividade em andamento antes de sair!');
+        Toast.warning('Finalize a atividade em andamento antes de sair!');
         return;
     }
 
@@ -249,7 +249,7 @@ async function carregarCadastros(){
         ){
             console.log("Cadastros carregados do cache local.");
         }else{
-            alert("Sem conexão com a API e nenhum cadastro foi encontrado no dispositivo.");
+            Toast.error("Sem conexão com a API e nenhum cadastro foi encontrado no dispositivo.");
         }
 
     }
@@ -352,13 +352,13 @@ function startTracking(){
         quantidadeEsperada=Number(document.getElementById('quantidade-esperada').value||0);
 
         if(quantidadeEsperada<=0){
-            alert('Informe a quantidade esperada ou selecione "Não".');
+            Toast.warning('Informe a quantidade esperada ou selecione "Não".');
             return;
         }
     }
 
     if(!user||!depositor||!name||!area||!lote){
-        alert('Preencha depositante, serviço, área e lote.');
+        Toast.warning('Preencha depositante, serviço, área e lote.');
         return;
     }
 
@@ -408,7 +408,7 @@ async function stopTracking(){
     }
 
     if(quantidadeRealizada<=0){
-        alert('Informe a quantidade realizada antes de finalizar.');
+        Toast.warning('Informe a quantidade realizada antes de finalizar.');
         return;
     }
 
@@ -487,7 +487,7 @@ async function stopTracking(){
     }
     
     await atualizarIndicadorOffline();
-    alert(mensagemFinal);
+    Toast.success(mensagemFinal);
 
     currentSession=null;
 

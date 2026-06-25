@@ -28,7 +28,7 @@ async function carregarLogs(mostrarErro = true) {
         console.error(erro);
 
         if (mostrarErro) {
-            alert("Erro ao carregar auditoria");
+            Toast.error("Erro ao carregar auditoria");
         }
     }
 }
@@ -231,7 +231,7 @@ function verDetalhesLog(index) {
     const log = logsAuditoria[index];
 
     if (!log) {
-        alert("Log não encontrado.");
+        Toast.warning("Log não encontrado.");
         return;
     }
 
@@ -326,9 +326,9 @@ async function copiarJSONAuditoria() {
 
     try {
         await navigator.clipboard.writeText(texto);
-        alert("JSON copiado.");
+        Toast.success("JSON copiado.");
     } catch {
-        alert("Não foi possível copiar.");
+        Toast.error("Não foi possível copiar.");
     }
 }
 
@@ -339,15 +339,15 @@ async function copiarDepoisAuditoria() {
 
     try {
         await navigator.clipboard.writeText(texto);
-        alert("JSON do campo Depois copiado.");
+        Toast.success("JSON do campo Depois copiado.");
     } catch {
-        alert("Não foi possível copiar.");
+        Toast.error("Não foi possível copiar.");
     }
 }
 
 function exportarCSV() {
     if (logsFiltrados.length === 0) {
-        alert("Nenhum log para exportar.");
+        Toast.warning("Nenhum log para exportar.");
         return;
     }
 
