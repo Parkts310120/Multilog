@@ -6,10 +6,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     const usuarioSalvo=localStorage.getItem('multilog_usuario');
     const token=localStorage.getItem('multilog_token');
 
-    if(usuarioSalvo&&token){
+    if(usuarioSalvo && usuarioSalvo !== "undefined" && token){
         usuarioLogado=JSON.parse(usuarioSalvo);
         showAppScreen();
     }else{
+        localStorage.removeItem('multilog_usuario');
+        localStorage.removeItem('multilog_token');
         showLoginScreen();
     }
 

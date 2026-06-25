@@ -12,18 +12,89 @@
 
 <body>
 
-<div class="container" style="max-width:1200px;">
+<div class="container" style="max-width:1500px;">
     <h1>Logs de Auditoria</h1>
-    <div class="subtitle">Ações realizadas no sistema</div>
+    <div class="subtitle">Monitoramento completo das ações realizadas no sistema</div>
 
-    <div style="margin-bottom:20px;">
-        <button class="btn-primary" onclick="window.location.href='/index.html'">
-            ⬅️ Voltar
-        </button>
+    <div style="margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="window.location.href='/index.html'">⬅️ Voltar</button>
+        <button class="btn-primary" onclick="carregarLogs()">🔄 Atualizar</button>
+        <button class="btn-primary" onclick="exportarCSV()">⬇️ Exportar CSV</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px;">
+        <div class="card">
+            <h3>Total</h3>
+            <div id="card-total" style="font-size:28px;font-weight:bold;">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Logins</h3>
+            <div id="card-login" style="font-size:28px;font-weight:bold;">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Cadastros</h3>
+            <div id="card-cadastro" style="font-size:28px;font-weight:bold;">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Atividades</h3>
+            <div id="card-atividade" style="font-size:28px;font-weight:bold;">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Ocultações</h3>
+            <div id="card-ocultar" style="font-size:28px;font-weight:bold;">0</div>
+        </div>
     </div>
 
     <div class="card" style="overflow-x:auto;">
-        <table class="table" style="width:100%; min-width:900px;">
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px;">
+            <div class="input-group">
+                <label>Pesquisar</label>
+                <input type="text" id="filtro-texto" placeholder="Usuário, ação, tabela..." oninput="aplicarFiltrosAuditoria()">
+            </div>
+
+            <div class="input-group">
+                <label>Período</label>
+                <select id="filtro-periodo" onchange="aplicarFiltrosAuditoria()">
+                    <option value="">Todos</option>
+                    <option value="hoje">Hoje</option>
+                    <option value="7">Últimos 7 dias</option>
+                    <option value="30">Últimos 30 dias</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Usuário</label>
+                <select id="filtro-usuario" onchange="aplicarFiltrosAuditoria()">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Ação</label>
+                <select id="filtro-acao" onchange="aplicarFiltrosAuditoria()">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Tabela</label>
+                <select id="filtro-tabela" onchange="aplicarFiltrosAuditoria()">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
+            <div id="contador-auditoria" style="font-weight:bold;">Carregando...</div>
+            <button class="btn-primary" onclick="limparFiltrosAuditoria()">Limpar filtros</button>
+        </div>
+
+        <table class="table" style="width:100%;min-width:1100px;">
             <thead>
                 <tr>
                     <th>Data</th>
@@ -37,10 +108,48 @@
 
             <tbody id="tbody-auditoria">
                 <tr>
-                    <td colspan="5">Carregando auditoria...</td>
+                    <td colspan="6">Carregando auditoria...</td>
                 </tr>
             </tbody>
         </table>
+
+        <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-top:20px;">
+            <button class="btn-primary" onclick="paginaAnterior()">◀</button>
+            <span id="info-paginacao">Página 1</span>
+            <button class="btn-primary" onclick="proximaPagina()">▶</button>
+        </div>
+
+    </div>
+</div>
+
+<div id="modal-auditoria" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#111827;color:white;width:94%;max-width:1100px;max-height:88vh;overflow:auto;border-radius:18px;padding:24px;border:1px solid #334155;box-shadow:0 20px 70px rgba(0,0,0,0.6);">
+        
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;">
+            <h2 style="margin:0;">📜 Detalhes da Auditoria</h2>
+            <button class="btn-primary" onclick="fecharModalAuditoria()">Fechar</button>
+        </div>
+
+        <div id="modal-auditoria-resumo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px;"></div>
+
+        <div id="modal-alteracoes" style="margin-bottom:20px;"></div>
+
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+            <button class="btn-primary" onclick="copiarJSONAuditoria()">📋 Copiar JSON completo</button>
+            <button class="btn-primary" onclick="copiarDepoisAuditoria()">📋 Copiar Depois</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;">
+            <div>
+                <h3>Antes</h3>
+                <pre id="modal-auditoria-antes" style="background:#020617;padding:16px;border-radius:12px;overflow:auto;white-space:pre-wrap;font-size:13px;min-height:180px;"></pre>
+            </div>
+
+            <div>
+                <h3>Depois</h3>
+                <pre id="modal-auditoria-depois" style="background:#020617;padding:16px;border-radius:12px;overflow:auto;white-space:pre-wrap;font-size:13px;min-height:180px;"></pre>
+            </div>
+        </div>
     </div>
 </div>
 
