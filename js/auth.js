@@ -24,7 +24,7 @@ function isAdmin() {
 
 function verificarLogin() {
     if (!getToken()) {
-        alert("Sessão expirada.");
+        Toast.warning("Sessão expirada.");
         window.location.href = "index.html";
         return false;
     }

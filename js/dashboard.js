@@ -46,7 +46,7 @@ atualizarDashboard();
 
 console.error(erro);
 
-alert(
+Toast.error(
 'Erro ao conectar com API.'
 );
 

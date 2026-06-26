@@ -46,7 +46,7 @@ atualizarTela();
 
 }catch(erro){
 console.error(erro);
-alert(erro.message||'Erro ao conectar com a API.');
+Toast.error(erro.message||'Erro ao conectar com a API.');
 }
 }
 
@@ -432,7 +432,15 @@ container.appendChild(div);
 }
 
 async function deleteSingleItem(id){
-if(!confirm('Deseja ocultar este registro? Ele continuará salvo no banco.'))return;
+const confirmado = await Confirm.open({
+    title: 'Ocultar registro',
+    message: 'Deseja ocultar este registro? Ele continuará salvo no banco.',
+    confirmText: 'Ocultar',
+    cancelText: 'Cancelar',
+    danger: true
+});
+
+if (!confirmado) return;
 
 try{
 
@@ -442,12 +450,20 @@ await loadActivitiesFromSupabase();
 
 }catch(erro){
 console.error(erro);
-alert(erro.message||'Erro ao conectar com a API.');
+Toast.error(erro.message||'Erro ao conectar com a API.');
 }
 }
 
 async function clearHistory(){
-if(!confirm('Deseja ocultar todo o histórico? Os dados continuarão no banco.'))return;
+const confirmado = await Confirm.open({
+    title: 'Ocultar todo o histórico',
+    message: 'Deseja ocultar todo o histórico? Os dados continuarão no banco.',
+    confirmText: 'Ocultar tudo',
+    cancelText: 'Cancelar',
+    danger: true
+});
+
+if (!confirmado) return;
 
 try{
 
@@ -455,11 +471,11 @@ await apiPatch('/api/admin/atividades/ocultar-todos');
 
 await loadActivitiesFromSupabase();
 
-alert('Histórico ocultado da tela.');
+Toast.success('Histórico ocultado da tela.');
 
 }catch(erro){
 console.error(erro);
-alert(erro.message||'Erro ao conectar com a API.');
+Toast.error(erro.message||'Erro ao conectar com a API.');
 }
 }
 

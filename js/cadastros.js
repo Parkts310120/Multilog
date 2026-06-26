@@ -19,34 +19,34 @@ async function addUsuarioSistema(){
 const nome=document.getElementById('novo-usuario-nome').value.trim();
 const usuario=document.getElementById('novo-usuario-login').value.trim();
 const senha=document.getElementById('novo-usuario-senha').value.trim();
-if(!nome||!usuario||!senha)return alert('Preencha nome, login e senha.');
+if(!nome||!usuario||!senha)return Toast.warning('Preencha nome, login e senha.');
 const resposta=await fetch(`${API_BASE_URL}/api/admin/usuarios`,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome,usuario,senha})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar admin.');
-alert(resultado.mensagem||'Admin cadastrado!');
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar admin.');
+Toast.success(resultado.mensagem||'Admin cadastrado!');
 }
 
 async function addExecutante(){
 const nome=document.getElementById('novo-executante').value.trim();
 const codigo=document.getElementById('novo-codigo').value.trim();
-if(!nome||!codigo)return alert('Digite nome e matrícula.');
+if(!nome||!codigo)return Toast.warning('Digite nome e matrícula.');
 const resposta=await fetch(`${API_BASE_URL}/api/admin/executantes`,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome,codigo})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar executante.');
-alert(resultado.mensagem);
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar executante.');
+Toast.success(resultado.mensagem);
 }
 
 async function addUsuariosEmMassa(){
 const texto=document.getElementById('usuarios-massa').value.trim();
-if(!texto)return alert('Cole a lista.');
+if(!texto)return Toast.warning('Cole a lista.');
 const usuarios=texto.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
 const p=l.split('_');
 return{usuario:p[0].trim(),senha:p[0].trim(),nome:p.slice(1).join('_').trim()};
@@ -57,39 +57,39 @@ headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}
 body:JSON.stringify({usuarios})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar funcionários.');
-alert(resultado.mensagem);
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar funcionários.');
+Toast.success(resultado.mensagem);
 }
 
 async function addDepositante(){
 const nome=document.getElementById('novo-depositante').value.trim();
-if(!nome)return alert('Digite o depositante.');
+if(!nome)return Toast.warning('Digite o depositante.');
 const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes`,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar depositante.');
-alert(resultado.mensagem||'Depositante cadastrado!');
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar depositante.');
+Toast.success(resultado.mensagem||'Depositante cadastrado!');
 }
 
 async function addAtividadeCadastro(){
 const nome=document.getElementById('nova-atividade').value.trim();
-if(!nome)return alert('Digite o serviço.');
+if(!nome)return Toast.warning('Digite o serviço.');
 const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos`,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({nome})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar serviço.');
-alert(resultado.mensagem||'Serviço cadastrado!');
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar serviço.');
+Toast.success(resultado.mensagem||'Serviço cadastrado!');
 }
 
 async function addDepositantesEmMassa(){
 const texto=document.getElementById('depositantes-massa').value.trim();
-if(!texto)return alert('Cole pelo menos um depositante.');
+if(!texto)return Toast.warning('Cole pelo menos um depositante.');
 const itens=texto.split(/\r?\n/).map(nome=>nome.trim()).filter(Boolean);
 const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes/massa`,{
 method:'POST',
@@ -97,13 +97,13 @@ headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}
 body:JSON.stringify({itens})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar depositantes.');
-alert(resultado.mensagem);
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar depositantes.');
+Toast.success(resultado.mensagem);
 }
 
 async function addServicosEmMassa(){
 const texto=document.getElementById('servicos-massa').value.trim();
-if(!texto)return alert('Cole pelo menos um serviço.');
+if(!texto)return Toast.warning('Cole pelo menos um serviço.');
 const itens=texto.split(/\r?\n/).map(nome=>nome.trim()).filter(Boolean);
 const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos/massa`,{
 method:'POST',
@@ -111,13 +111,13 @@ headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}
 body:JSON.stringify({itens})
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao cadastrar serviços.');
-alert(resultado.mensagem);
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar serviços.');
+Toast.success(resultado.mensagem);
 }
 
 async function addArea(){
 const nome=document.getElementById('nova-area').value.trim();
-if(!nome)return alert('Digite a área.');
+if(!nome)return Toast.warning('Digite a área.');
 
 const resposta=await fetch(`${API_BASE_URL}/api/admin/areas`,{
 method:'POST',
@@ -131,15 +131,15 @@ body:JSON.stringify({nome})
 const resultado=await resposta.json();
 
 if(!resposta.ok||!resultado.sucesso){
-return alert(resultado.mensagem||'Erro ao cadastrar área.');
+return Toast.error(resultado.mensagem||'Erro ao cadastrar área.');
 }
 
-alert(resultado.mensagem||'Área cadastrada!');
+Toast.success(resultado.mensagem||'Área cadastrada!');
 }
 
 async function addAreasEmMassa(){
 const texto=document.getElementById('areas-massa').value.trim();
-if(!texto)return alert('Cole pelo menos uma área.');
+if(!texto)return Toast.warning('Cole pelo menos uma área.');
 
 const itens=texto
 .split(/\r?\n/)
@@ -158,10 +158,10 @@ body:JSON.stringify({itens})
 const resultado=await resposta.json();
 
 if(!resposta.ok||!resultado.sucesso){
-return alert(resultado.mensagem||'Erro ao cadastrar áreas.');
+return Toast.error(resultado.mensagem||'Erro ao cadastrar áreas.');
 }
 
-alert(resultado.mensagem);
+Toast.success(resultado.mensagem);
 }
 
 function abrirTabela(titulo,colunas,linhas){
@@ -205,7 +205,7 @@ const resposta=await fetch(`${API_BASE_URL}/api/admin/usuarios`,{
 headers:{'Authorization':`Bearer ${getToken()}`}
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar usuários.');
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao carregar usuários.');
 abrirTabela('Usuários Cadastrados',['Nome','Login','Tipo','Status'],resultado.usuarios.map(x=>[x.nome,x.usuario,x.tipo,x.ativo?'Ativo':'Inativo']));
 }
 
@@ -214,7 +214,7 @@ const resposta=await fetch(`${API_BASE_URL}/api/admin/depositantes`,{
 headers:{'Authorization':`Bearer ${getToken()}`}
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar depositantes.');
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao carregar depositantes.');
 abrirTabela('Depositantes Cadastrados',['Nome','Status'],resultado.depositantes.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));
 }
 
@@ -223,7 +223,7 @@ const resposta=await fetch(`${API_BASE_URL}/api/admin/servicos`,{
 headers:{'Authorization':`Bearer ${getToken()}`}
 });
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return alert(resultado.mensagem||'Erro ao carregar serviços.');
+if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao carregar serviços.');
 abrirTabela('Serviços Cadastrados',['Nome','Status'],resultado.servicos.map(x=>[x.nome,x.ativo?'Ativo':'Inativo']));
 }
 
@@ -253,7 +253,7 @@ headers:{
 const resultado=await resposta.json();
 
 if(!resposta.ok||!resultado.sucesso){
-return alert(resultado.mensagem||'Erro ao carregar áreas.');
+return Toast.error(resultado.mensagem||'Erro ao carregar áreas.');
 }
 
 abrirTabela(
