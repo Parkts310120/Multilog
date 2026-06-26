@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/toast.css">
 <link rel="stylesheet" href="css/loading.css">
 <link rel="stylesheet" href="css/confirm.css">
+<link rel="stylesheet" href="css/buttons.css">
 </head>
 
 <body>
@@ -16,7 +17,7 @@
 <h1>🔐 Histórico Admin</h1>
 
 <div class="card">
-<button onclick="history.back()">⬅️ Voltar ao Portal</button>
+<button class="btn btn-secondary" onclick="history.back()">⬅️ Voltar ao Portal</button>
 </div>
 
 <div class="card">
@@ -54,8 +55,8 @@
 </div>
 </div>
 
-<button onclick="aplicarFiltros()">Aplicar filtros</button>
-<button class="btn-danger" onclick="limparFiltros()">Limpar filtros</button>
+<button class="btn btn-primary" onclick="aplicarFiltros()">Aplicar filtros</button>
+<button class="btn btn-light" onclick="limparFiltros()">Limpar filtros</button>
 </div>
 
 <div class="card">
@@ -96,8 +97,8 @@
 </div>
 
 <div class="card">
-<button onclick="exportCSV()">📥 Exportar CSV</button>
-<button class="btn-danger" onclick="clearHistory()">Ocultar Todo Histórico</button>
+<button class="btn btn-success" onclick="exportCSV()">📥 Exportar CSV</button>
+<button class="btn btn-danger" onclick="clearHistory()">Ocultar Todo Histórico</button>
 </div>
 
 <div class="card">
