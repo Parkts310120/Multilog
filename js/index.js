@@ -159,18 +159,20 @@ function showLoginScreen(){
     currentSession=null;
     clearInterval(timerInterval);
 
-    document.getElementById('login-screen').style.display='block';
-    document.getElementById('app-screen').style.display='none';
+    mostrarTelaOperador('login-screen');
+    
     document.getElementById('admin-buttons').style.display='none';
     document.getElementById('tracking-card').style.display='block';
 }
 
 function showAppScreen(){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app-screen').style.display='block';
-    document.getElementById('executante-logado').value=usuarioLogado.nome+' ('+usuarioLogado.usuario+')';
+    const isAdmin = usuarioLogado && usuarioLogado.tipo === "admin";
 
-    const isAdmin=usuarioLogado&&usuarioLogado.tipo==='admin';
+    if (isAdmin) {
+        mostrarTelaOperador("app-screen");
+    } else {
+        mostrarTelaOperador("menu-screen");
+    }
 
     if(isAdmin){
         document.getElementById('app-title').innerText='Portal Administrativo';

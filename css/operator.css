@@ -1,0 +1,161 @@
+/* ===========================
+   MULTILOG OPERACIONAL
+   Estilo Coletor / WMS
+=========================== */
+
+.operator-page {
+    min-height: 100vh;
+    background: #020617;
+    color: #39ff14;
+    font-family: "Consolas", "Courier New", monospace;
+}
+
+.operator-container {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 14px;
+}
+
+.operator-title {
+    font-size: 26px;
+    font-weight: 900;
+    text-align: center;
+    margin: 14px 0 4px;
+    color: #39ff14;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.operator-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #22c55e;
+    margin-bottom: 16px;
+}
+
+.operator-card {
+    background: #000000;
+    border: 2px solid #166534;
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.14);
+}
+
+.operator-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 900;
+    color: #39ff14;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.operator-label::before {
+    content: "[ ";
+}
+
+.operator-label::after {
+    content: " ]";
+}
+
+.operator-input,
+.operator-select {
+    width: 100%;
+    min-height: 54px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    border: 2px solid #166534;
+    background: #020617;
+    color: #39ff14;
+    font-size: 20px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-weight: 800;
+    box-sizing: border-box;
+}
+
+.operator-input:focus,
+.operator-select:focus {
+    outline: none;
+    border-color: #39ff14;
+    box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.2);
+}
+
+.operator-input::placeholder {
+    color: #15803d;
+}
+
+.operator-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.operator-btn {
+    min-height: 60px;
+    border: 2px solid #39ff14;
+    border-radius: 4px;
+    font-size: 18px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.operator-btn-start {
+    background: #052e16;
+    color: #39ff14;
+}
+
+.operator-btn-finish {
+    background: #450a0a;
+    color: #f87171;
+    border-color: #ef4444;
+}
+
+.operator-btn-secondary {
+    background: #111827;
+    color: #e5e7eb;
+    border-color: #64748b;
+}
+
+.operator-status {
+    padding: 12px;
+    border-radius: 4px;
+    background: #000000;
+    border: 1px dashed #166534;
+    color: #39ff14;
+    font-size: 14px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.operator-status::before {
+    content: "> ";
+}
+
+@media (max-width: 480px) {
+    .operator-container {
+        padding: 10px;
+    }
+
+    .operator-title {
+        font-size: 22px;
+    }
+
+    .operator-card {
+        padding: 12px;
+    }
+
+    .operator-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .operator-btn {
+        width: 100%;
+    }
+}
