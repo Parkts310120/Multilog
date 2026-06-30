@@ -3,133 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rastreador de Atividades Pro</title>
-<link rel="manifest" href="/assets/manifest-B329fT_3.json">
-<meta name="theme-color" content="#0f172a">
-  <link rel="stylesheet" crossorigin href="/assets/index-C6jXwcJO.css">
+<title>Multilog</title>
+
+
+<style>
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#0f172a;
+    color:#fff;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+.home{
+    width:100%;
+    max-width:420px;
+    padding:24px;
+}
+
+.home-title{
+    font-size:34px;
+    font-weight:800;
+    text-align:center;
+    margin-bottom:8px;
+}
+
+.home-subtitle{
+    text-align:center;
+    color:#cbd5e1;
+    margin-bottom:24px;
+}
+
+.home-card{
+    background:#fff;
+    color:#0f172a;
+    border-radius:16px;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+</style>
+  <link rel="stylesheet" crossorigin href="/assets/index-C2cQVGUu.css">
 </head>
 
 <body>
 
-<div class="container" id="login-screen" style="display:none;">
-    <h1>Acesso Restrito</h1>
-    <div class="subtitle">Faça login para acessar o sistema</div>
-    <div class="card">
-        <div class="input-group">
-            <label for="login-username">Usuário</label>
-            <input type="text" id="login-username" placeholder="Digite o usuário">
-        </div>
-        <div class="input-group">
-            <label for="login-password">Senha</label>
-            <input type="password" id="login-password" placeholder="Digite a senha">
-        </div>
-        <button class="btn-primary" onclick="handleLogin()">🔓 Entrar</button>
-        <div class="error-message" id="login-error">Usuário ou senha incorretos!</div>
+<div class="home">
+    <div class="home-title">MULTILOG</div>
+    <div class="home-subtitle">Selecione o ambiente</div>
+
+    <div class="home-card">
+        <button class="btn btn-success btn-lg" onclick="window.location.href='operator/index.html'">
+            📦 Operador / Coletor
+        </button>
+
+        <button class="btn btn-primary btn-lg" onclick="window.location.href='admin-login.html'">
+            📊 Administração
+        </button>
+        
     </div>
 </div>
 
-<div class="container" id="app-screen" style="display:none;">
-    <h1 id="app-title">Registro de Atividade</h1>
-    <div class="subtitle" id="app-subtitle">Selecione os dados cadastrados e registre o tempo</div>
-
-    <div id="offline-status" style="margin: 12px 0; font-weight: bold;">
-        🟢 Online
-    </div>
-
-    <div class="card" id="tracking-card">
-        <div class="input-group">
-            <label>Executante</label>
-            <input type="text" id="executante-logado" disabled>
-        </div>
-
-        <div class="input-group">
-            <label for="depositor-name">Selecione o Depositante</label>
-            <select id="depositor-name"></select>
-        </div>
-
-        <div class="input-group">
-            <label for="activity-name">Selecione o Serviço</label>
-            <select id="activity-name"></select>
-        </div>
-
-        <div class="input-group">
-            <label for="area-name">Selecione a Área</label>
-            <select id="area-name"></select>
-        </div>
-
-        <div class="input-group">
-            <label for="lote">Lote / NF / OS</label>
-            <input type="text" id="lote" placeholder="Ex: NF 12345, OS 987, Lote A">
-        </div>
-
-        <div class="input-group">
-            <label for="tem-quantidade-esperada">Tem quantidade esperada?</label>
-            <select id="tem-quantidade-esperada" onchange="alternarQuantidadeEsperada()">
-                <option value="sim">Sim</option>
-                <option value="nao">Não</option>
-            </select>
-        </div>
-
-        <div class="input-group" id="grupo-quantidade-esperada">
-            <label for="quantidade-esperada">Quantidade esperada</label>
-            <input type="number" id="quantidade-esperada" min="0" step="1" placeholder="Quantidade prevista">
-        </div>
-
-        <div class="input-group">
-            <label for="unidade">Unidade</label>
-            <input type="text" id="unidade" value="peça" placeholder="Ex: peça, pallet, caixa">
-        </div>
-
-        <div class="input-group" id="grupo-quantidade-realizada" style="display:none;">
-            <label for="quantidade-realizada">Quantidade realizada</label>
-            <input type="number" id="quantidade-realizada" min="0" step="1" placeholder="Quantidade contada">
-        </div>
-
-        <div class="input-group" id="grupo-observacao" style="display:none;">
-            <label for="observacao">Observação</label>
-            <textarea id="observacao" rows="3" placeholder="Ex: divergência, avaria, falta, sobra"></textarea>
-        </div>
-
-        <div class="status-panel">
-            <div id="status-container">
-                <span class="status-badge status-free">Pronto para iniciar</span>
-            </div>
-            <div id="live-timer" style="font-size:1.2rem;font-weight:bold;margin-top:8px;color:var(--primary);display:none;">
-                00:00:00
-            </div>
-        </div>
-
-        <div class="btn-grid">
-            <button class="btn-start" id="btn-start" onclick="startTracking()">▶️ Iniciar</button>
-            <button class="btn-end" id="btn-end" onclick="stopTracking()" disabled>⏹️ Finalizar</button>
-        </div>
-    </div>
-
-    <div id="admin-buttons" style="margin-bottom:24px;display:none;">
-        <button class="btn-primary" onclick="window.location.href='/admin-dashboard.html'">📊 Área Admin - Dashboard</button>
-        <button class="btn-primary" onclick="window.location.href='/admin-historico.html'">🔐 Área Admin - Histórico</button>
-        <button class="btn-primary" onclick="window.location.href='/admin-cadastros.html'">⚙️ Área Admin - Cadastros</button>    
-        <button class="btn-primary" onclick="window.location.href='/admin-auditoria.html'">📜 Área Admin - Auditoria</button>
-    </div>
-
-    <div class="logout-link" onclick="handleLogout()">Sair do aplicativo</div>
-</div>
-
-<script src="/js/config.js"></script>
-<script src="/js/api.js"></script>
-<script src="/js/auth.js"></script>
-<script src="/js/offline.js"></script>
-<script src="/js/index.js"></script>
-<!--
-<script>
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js")
-            .then(() => console.log("Service Worker registrado"))
-            .catch(erro => console.error("Erro ao registrar Service Worker:", erro));
-    });
-}
-</script>
--->
 </body>
 </html>
