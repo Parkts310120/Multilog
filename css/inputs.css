@@ -1,0 +1,47 @@
+.ml-input-group{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    margin-bottom:16px;
+}
+
+.ml-label{
+    font-size:14px;
+    font-weight:600;
+    color:#334155;
+}
+
+.ml-input,
+.ml-select,
+.ml-textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+    background:#fff;
+    color:#0f172a;
+    font-size:14px;
+    transition:.2s ease;
+    box-sizing:border-box;
+}
+
+.ml-input:focus,
+.ml-select:focus,
+.ml-textarea:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+
+.ml-input:disabled,
+.ml-select:disabled,
+.ml-textarea:disabled{
+    background:#f8fafc;
+    color:#94a3b8;
+    cursor:not-allowed;
+}
+
+.ml-textarea{
+    min-height:100px;
+    resize:vertical;
+}

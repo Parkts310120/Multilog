@@ -12,17 +12,39 @@
 <link rel="stylesheet" href="css/toast.css">
 <link rel="stylesheet" href="css/loading.css">
 <link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/cards.css">
+<link rel="stylesheet" href="css/inputs.css">
+<link rel="stylesheet" href="css/layout.css">
 </head>
 
 <body>
 
-<div class="container">
+<div class="ml-layout">
+
+<header class="ml-header">
+    <div>
+        <strong>Multilog</strong>
+        <span style="color:#64748b;margin-left:8px;">Dashboard Operacional</span>
+    </div>
+
+    <div>
+        <button class="btn btn-secondary btn-sm" onclick="history.back()">⬅️ Voltar</button>
+    </div>
+</header>
+
+<aside class="ml-sidebar">
+    <h2>Multilog</h2>
+
+    <a href="admin-dashboard.html">📊 Dashboard</a>
+    <a href="admin-historico.html">📋 Histórico</a>
+    <a href="admin-cadastros.html">⚙️ Cadastros</a>
+    <a href="admin-auditoria.html">🧾 Auditoria</a>
+    <a href="index.html">🏠 Portal</a>
+</aside>
+
+<main class="ml-main">
 
 <h1>📊 Dashboard Operacional Multilog</h1>
-
-<div class="card">
-<button onclick="history.back()">⬅️ Voltar</button>
-</div>
 
 <div class="card">
 
@@ -30,17 +52,12 @@
 
 <div class="quick-grid">
 
-<button class="quick-btn" onclick="periodoHoje()">Hoje</button>
-
-<button class="quick-btn" onclick="periodoOntem()">Ontem</button>
-
-<button class="quick-btn" onclick="periodo7Dias()">7 Dias</button>
-
-<button class="quick-btn" onclick="periodo30Dias()">30 Dias</button>
-
-<button class="quick-btn" onclick="periodoMesAtual()">Mês Atual</button>
-
-<button class="quick-btn" onclick="periodoAno()">Ano</button>
+<button class="btn btn-primary" onclick="periodoHoje()">Hoje</button>
+<button class="btn btn-primary" onclick="periodoOntem()">Ontem</button>
+<button class="btn btn-primary" onclick="periodo7Dias()">7 Dias</button>
+<button class="btn btn-primary" onclick="periodo30Dias()">30 Dias</button>
+<button class="btn btn-primary" onclick="periodoMesAtual()">Mês Atual</button>
+<button class="btn btn-primary" onclick="periodoAno()">Ano</button>
 
 </div>
 
@@ -50,39 +67,37 @@
 
 <div class="input-group">
 <label>Data Inicial</label>
-<input type="date" id="filtro-data-inicial">
+<input class="ml-input" type="date" id="filtro-data-inicial">
 </div>
 
 <div class="input-group">
 <label>Data Final</label>
-<input type="date" id="filtro-data-final">
+<input class="ml-input" type="date" id="filtro-data-final">
 </div>
 
 <div class="input-group">
 <label>Operador</label>
-<select id="filtro-usuario"></select>
+<select class="ml-select" id="filtro-usuario"></select>
 </div>
 
 <div class="input-group">
 <label>Cliente</label>
-<select id="filtro-depositante"></select>
+<select class="ml-select" id="filtro-depositante"></select>
 </div>
 
 <div class="input-group">
 <label>Área</label>
-<select id="filtro-area"></select>
+<select class="ml-select" id="filtro-area"></select>
 </div>
 
 <div class="input-group">
 <label>Serviço</label>
-<select id="filtro-servico"></select>
+<select class="ml-select" id="filtro-servico"></select>
 </div>
 
 </div>
 
-<button onclick="aplicarFiltros()">
-Aplicar Filtros
-</button>
+<button class="btn btn-success" onclick="aplicarFiltros()">Aplicar Filtros</button>
 
 </div>
 
@@ -90,9 +105,7 @@ Aplicar Filtros
 
 <h3>Indicadores</h3>
 
-<div id="kpi-container" class="kpi-grid">
-
-</div>
+<div id="kpi-container" class="kpi-grid"></div>
 
 </div>
 
@@ -138,50 +151,33 @@ Aplicar Filtros
 <div class="rank-grid">
 
 <div class="rank-box">
-
 <h4>👷 Top Operadores</h4>
-
-<div id="ranking-operadores">
-
-</div>
-
+<div id="ranking-operadores"></div>
 </div>
 
 <div class="rank-box">
-
 <h4>🏢 Top Clientes</h4>
-
-<div id="ranking-clientes">
-
-</div>
-
+<div id="ranking-clientes"></div>
 </div>
 
 <div class="rank-box">
-
 <h4>🏭 Top Áreas</h4>
-
-<div id="ranking-areas">
-
-</div>
-
+<div id="ranking-areas"></div>
 </div>
 
 <div class="rank-box">
-
 <h4>🛠 Top Serviços</h4>
-
-<div id="ranking-servicos">
-
+<div id="ranking-servicos"></div>
 </div>
 
 </div>
 
 </div>
 
+</main>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
@@ -189,8 +185,5 @@ Aplicar Filtros
 <script src="/js/loading.js"></script>
 <script src="/js/dashboard.js"></script>
 
-
-
-</div>
 </body>
 </html>

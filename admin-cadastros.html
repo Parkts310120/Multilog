@@ -9,122 +9,164 @@
 <link rel="stylesheet" href="css/toast.css">
 <link rel="stylesheet" href="css/loading.css">
 <link rel="stylesheet" href="css/buttons.css">
+<link rel="stylesheet" href="css/cards.css">
+<link rel="stylesheet" href="css/inputs.css">
+<link rel="stylesheet" href="css/layout.css">
 </head>
+
 <body>
+
 <div class="container">
+
 <h1>⚙️ Cadastros Admin</h1>
 
 <div class="card" id="menu-cadastros">
-<div class="box">
-<h3>📋 Menu de Cadastros</h3>
-<div class="box" style="margin-bottom:28px;border-color:#475569;">
-<button onclick="voltarPortalAdmin()">⬅️ Voltar ao Portal</button>
-</div>
+    <div class="box">
+        <h3>📋 Menu de Cadastros</h3>
 
-<div class="box">
-<button onclick="mostrarSecao('sec-listas')">👥 Consultar Listas</button>
-<button onclick="mostrarSecao('sec-funcionarios')">👤 Funcionários / Executantes</button>
-<button onclick="mostrarSecao('sec-admin')">🔐 Admin</button>
-<button onclick="mostrarSecao('sec-depositantes')">📦 Depositantes</button>
-<button onclick="mostrarSecao('sec-servicos')">🛠️ Serviços</button>
-<button onclick="mostrarSecao('sec-areas')">🏭 Áreas</button>
-</div>
-</div>
+        <div class="box" style="margin-bottom:28px;border-color:#475569;">
+            <button class="btn btn-secondary" onclick="voltarPortalAdmin()">⬅️ Voltar ao Portal</button>
+
+            <button class="btn btn-primary" onclick="mostrarSecao('sec-listas')">👥 Consultar Listas</button>
+            <button class="btn btn-primary" onclick="mostrarSecao('sec-funcionarios')">👤 Funcionários / Executantes</button>
+            <button class="btn btn-primary" onclick="mostrarSecao('sec-admin')">🔐 Admin</button>
+            <button class="btn btn-primary" onclick="mostrarSecao('sec-depositantes')">📦 Depositantes</button>
+            <button class="btn btn-primary" onclick="mostrarSecao('sec-servicos')">🛠️ Serviços</button>
+            <button class="btn btn-primary" onclick="mostrarSecao('sec-areas')">🏭 Áreas</button>
+        </div>
+    </div>
 </div>
 
 <div class="card secao-cadastro" id="sec-listas">
-<div class="box">
-<h3>👥 Consultar Listas</h3>
-<div class="box" style="margin-bottom:28px;border-color:#475569;">
-<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-</div>
-<div class="box">
-<button onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
-<button onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
-<button onclick="abrirPaginaServicos()">Abrir Lista de Serviços</button>
-<button onclick="abrirPaginaAreas()">Abrir Lista de Áreas</button>
-</div>
-</div>
+    <div class="box">
+        <h3>👥 Consultar Listas</h3>
+
+        <div class="box" style="margin-bottom:28px;border-color:#475569;">
+            <button class="btn btn-secondary" onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+        </div>
+
+        <div class="box">
+            <button class="btn btn-primary" onclick="abrirPaginaUsuarios()">Abrir Lista de Usuários</button>
+            <button class="btn btn-primary" onclick="abrirPaginaDepositantes()">Abrir Lista de Depositantes</button>
+            <button class="btn btn-primary" onclick="abrirPaginaServicos()">Abrir Lista de Serviços</button>
+            <button class="btn btn-primary" onclick="abrirPaginaAreas()">Abrir Lista de Áreas</button>
+        </div>
+    </div>
 </div>
 
 <div class="card secao-cadastro" id="sec-funcionarios">
-<div class="box">
-<h3>👤 Funcionários / Executantes</h3>
-<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-<h4>📥 Cadastro em Massa de Funcionários</h4>
-<p style="color:#94a3b8">Formato: <b>43094_AGRICIO BENICIO SAMPAIO FILHO</b></p>
-<textarea id="usuarios-massa" style="min-height:180px"></textarea>
-<button onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
-<hr style="margin:20px 0;border-color:#334155;">
-<h4>👤 Cadastrar Executante</h4>
-<label>Nome do Executante</label>
-<input id="novo-executante">
-<label>Matrícula</label>
-<input id="novo-codigo">
-<button onclick="addExecutante()">Adicionar Executante</button>
-</div>
+    <div class="box">
+        <h3>👤 Funcionários / Executantes</h3>
+
+        <button class="btn btn-secondary" onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+
+        <h4>📥 Cadastro em Massa de Funcionários</h4>
+        <p style="color:#94a3b8">Formato: <b>43094_AGRICIO BENICIO SAMPAIO FILHO</b></p>
+
+        <textarea id="usuarios-massa" class="ml-textarea" style="min-height:180px"></textarea>
+
+        <button class="btn btn-success" onclick="addUsuariosEmMassa()">Cadastrar Funcionários em Massa</button>
+
+        <hr style="margin:20px 0;border-color:#334155;">
+
+        <h4>👤 Cadastrar Executante</h4>
+
+        <label>Nome do Executante</label>
+        <input id="novo-executante" class="ml-input">
+
+        <label>Matrícula</label>
+        <input id="novo-codigo" class="ml-input">
+
+        <button class="btn btn-success" onclick="addExecutante()">Adicionar Executante</button>
+    </div>
 </div>
 
 <div class="card secao-cadastro" id="sec-admin">
-<div class="box">
-<h3>🔐 Cadastrar Admin</h3>
-<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-<label>Nome do Admin</label>
-<input id="novo-usuario-nome">
-<label>Login do Admin</label>
-<input id="novo-usuario-login">
-<label>Senha do Admin</label>
-<input id="novo-usuario-senha" type="password">
-<button onclick="addUsuarioSistema()">Adicionar Admin</button>
-</div>
+    <div class="box">
+        <h3>🔐 Cadastrar Admin</h3>
+
+        <button class="btn btn-secondary" onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+
+        <label>Nome do Admin</label>
+        <input id="novo-usuario-nome" class="ml-input">
+
+        <label>Login do Admin</label>
+        <input id="novo-usuario-login" class="ml-input">
+
+        <label>Senha do Admin</label>
+        <input id="novo-usuario-senha" type="password" class="ml-input">
+
+        <button class="btn btn-success" onclick="addUsuarioSistema()">Adicionar Admin</button>
+    </div>
 </div>
 
 <div class="card secao-cadastro" id="sec-depositantes">
-<div class="box">
-<h3>📦 Depositantes</h3>
-<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-<h4>📦 Cadastro em Massa de Depositantes</h4>
-<textarea id="depositantes-massa" style="min-height:120px"></textarea>
-<button onclick="addDepositantesEmMassa()">Cadastrar Depositantes em Massa</button>
-<hr style="margin:20px 0;border-color:#334155;">
-<h4>📦 Novo Depositante</h4>
-<input id="novo-depositante">
-<button onclick="addDepositante()">Adicionar Depositante</button>
-</div>
+    <div class="box">
+        <h3>📦 Depositantes</h3>
+
+        <button class="btn btn-secondary" onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+
+        <h4>📦 Cadastro em Massa de Depositantes</h4>
+
+        <textarea id="depositantes-massa" class="ml-textarea" style="min-height:120px"></textarea>
+
+        <button class="btn btn-success" onclick="addDepositantesEmMassa()">Cadastrar Depositantes em Massa</button>
+
+        <hr style="margin:20px 0;border-color:#334155;">
+
+        <h4>📦 Novo Depositante</h4>
+
+        <input id="novo-depositante" class="ml-input">
+
+        <button class="btn btn-success" onclick="addDepositante()">Adicionar Depositante</button>
+    </div>
 </div>
 
 <div class="card secao-cadastro" id="sec-servicos">
-<div class="box">
-<h3>🛠️ Serviços</h3>
-<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
-<h4>🛠️ Cadastro em Massa de Serviços</h4>
-<textarea id="servicos-massa" style="min-height:120px"></textarea>
-<button onclick="addServicosEmMassa()">Cadastrar Serviços em Massa</button>
-<hr style="margin:20px 0;border-color:#334155;">
-<h4>🛠️ Novo Serviço</h4>
-<input id="nova-atividade">
-<button onclick="addAtividadeCadastro()">Adicionar Serviço</button>
-</div>
-</div>
+    <div class="box">
+        <h3>🛠️ Serviços</h3>
+
+        <button class="btn btn-secondary" onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+
+        <h4>🛠️ Cadastro em Massa de Serviços</h4>
+
+        <textarea id="servicos-massa" class="ml-textarea" style="min-height:120px"></textarea>
+
+        <button class="btn btn-success" onclick="addServicosEmMassa()">Cadastrar Serviços em Massa</button>
+
+        <hr style="margin:20px 0;border-color:#334155;">
+
+        <h4>🛠️ Novo Serviço</h4>
+
+        <input id="nova-atividade" class="ml-input">
+
+        <button class="btn btn-success" onclick="addAtividadeCadastro()">Adicionar Serviço</button>
+    </div>
 </div>
 
 <div class="card secao-cadastro" id="sec-areas">
-<div class="box">
-<h3>🏭 Áreas</h3>
-<button onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
+    <div class="box">
+        <h3>🏭 Áreas</h3>
 
-<h4>🏭 Cadastro em Massa de Áreas</h4>
-<textarea id="areas-massa" style="min-height:120px"></textarea>
-<button onclick="addAreasEmMassa()">Cadastrar Áreas em Massa</button>
+        <button class="btn btn-secondary" onclick="voltarMenuCadastros()">⬅️ Voltar para Cadastros</button>
 
-<hr style="margin:20px 0;border-color:#334155;">
+        <h4>🏭 Cadastro em Massa de Áreas</h4>
 
-<h4>🏭 Nova Área</h4>
-<input id="nova-area">
-<button onclick="addArea()">Adicionar Área</button>
+        <textarea id="areas-massa" class="ml-textarea" style="min-height:120px"></textarea>
+
+        <button class="btn btn-success" onclick="addAreasEmMassa()">Cadastrar Áreas em Massa</button>
+
+        <hr style="margin:20px 0;border-color:#334155;">
+
+        <h4>🏭 Nova Área</h4>
+
+        <input id="nova-area" class="ml-input">
+
+        <button class="btn btn-success" onclick="addArea()">Adicionar Área</button>
+    </div>
 </div>
-</div>
 
+</div>
 
 <script src="/js/config.js"></script>
 <script src="/js/api.js"></script>
