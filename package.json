@@ -9,7 +9,7 @@
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "vite --host 0.0.0.0",
     "dev:all": "echo \"⚠️ Confira em PORTS: 3000 e 5173 precisam estar PUBLIC\" && concurrently -n BACKEND,FRONTEND -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "build": "vite build",
+    "build": "rm -rf dist && mkdir -p dist && cp index.html admin-*.html manifest.json dist/ && cp -r css js operator dist/",
     "preview": "vite preview"
   },
   "repository": {
