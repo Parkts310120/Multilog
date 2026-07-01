@@ -88,9 +88,15 @@ headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}
 body:JSON.stringify({usuarios})
 });
 
-const resultado=await resposta.json();
+let resultado={};
 
-if(!resposta.ok||!resultado.sucesso){
+try{
+resultado=await resposta.json();
+}catch{
+resultado={};
+}
+
+if(!resposta.ok){
 return Toast.error(resultado.mensagem||'Erro ao cadastrar funcionários.');
 }
 
@@ -98,8 +104,8 @@ Toast.success(resultado.mensagem||`${usuarios.length} funcionário(s) cadastrado
 document.getElementById('usuarios-massa').value='';
 
 }catch(erro){
-Toast.error('Erro de conexão ao cadastrar funcionários.');
 console.error(erro);
+Toast.error('Erro de conexão ao cadastrar funcionários.');
 }
 }
 
