@@ -1,18 +1,39 @@
+// js/cadastros.js
 function getToken(){
 return localStorage.getItem('multilog_token');
 }
 
 function mostrarSecao(id){
+const titulo = document.getElementById("titulo-cadastros");
+if (titulo) titulo.style.display = "none";
+
 document.getElementById('menu-cadastros').style.display='none';
 document.querySelectorAll('.secao-cadastro').forEach(secao=>secao.style.display='none');
-document.getElementById(id).style.display='block';
-window.scrollTo({top:0,behavior:'smooth'});
+
+const secaoSelecionada = document.getElementById(id);
+
+if(secaoSelecionada){
+secaoSelecionada.style.display='block';
+}
+
+window.scrollTo({top:0,behavior:'instant'});
 }
 
 function voltarMenuCadastros(){
+const titulo = document.getElementById("titulo-cadastros");
+if (titulo) titulo.style.display = "block";
+
 document.getElementById('menu-cadastros').style.display='block';
 document.querySelectorAll('.secao-cadastro').forEach(secao=>secao.style.display='none');
-window.scrollTo({top:0,behavior:'smooth'});
+
+const listasContainer = document.getElementById("listas-container");
+
+if(listasContainer){
+listasContainer.innerHTML = "";
+}
+
+window.history.replaceState({}, "", "admin-cadastros.html");
+window.scrollTo({top:0,behavior:'instant'});
 }
 
 async function addUsuarioSistema(){
@@ -164,40 +185,37 @@ return Toast.error(resultado.mensagem||'Erro ao cadastrar áreas.');
 Toast.success(resultado.mensagem);
 }
 
-function abrirTabela(titulo,colunas,linhas){
-const html=`
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>${titulo}</title>
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/cadastros.css">
-</head>
-<body>
-<div class="container">
-<h1>${titulo}</h1>
-<button onclick="window.location.href='admin-cadastros.html'">⬅️ Voltar para Cadastros</button>
+function abrirTabela(titulo, colunas, linhas) {
+    const container = document.getElementById("listas-container");
 
-<div class="card">
-<div class="table-container">
-<table>
-<thead>
-<tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr>
-</thead>
-<tbody>
-${linhas.map(l=>`<tr>${l.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</body>
-</html>`;
+    if (!container) {
+        Toast.error("Área de listas não encontrada.");
+        return;
+    }
 
-document.open();
-document.write(html);
-document.close();
+    container.innerHTML = `
+        <div class="card" style="margin-top:20px;overflow-x:auto;width:100%;">
+            <h3>${titulo}</h3>
+
+            <table class="table" style="width:100%;min-width:700px;">
+                <thead>
+                    <tr>
+                        ${colunas.map(c => `<th>${c}</th>`).join("")}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${linhas.map(l => `
+                        <tr>
+                            ${l.map(v => `<td>${v}</td>`).join("")}
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    window.scrollTo({top:0,behavior:"instant"});
 }
 
 async function abrirPaginaUsuarios(){
@@ -243,6 +261,7 @@ window.location.href='index.html?admin=1';
 window.location.href='index.html';
 }
 }
+
 async function abrirPaginaAreas(){
 const resposta=await fetch(`${API_BASE_URL}/api/admin/areas`,{
 headers:{
@@ -262,3 +281,12 @@ abrirTabela(
 resultado.areas.map(x=>[x.nome,x.ativo?'Ativo':'Inativo'])
 );
 }
+
+window.addEventListener("load", () => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("sec") === "listas" && typeof mostrarSecao === "function") {
+        mostrarSecao("sec-listas");
+        window.scrollTo({top:0,behavior:"instant"});
+    }
+});
