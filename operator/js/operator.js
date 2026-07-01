@@ -2,7 +2,24 @@ let usuarioLogado=null;
 let currentSession=null;
 let timerInterval=null;
 
+function validarAcessoOperador() {
+    const usuarioSalvo = localStorage.getItem("multilog_usuario");
+
+    if (!usuarioSalvo || usuarioSalvo === "undefined") return true;
+
+    const usuario = JSON.parse(usuarioSalvo);
+
+    if (usuario.tipo === "admin") {
+        localStorage.removeItem("multilog_token");
+        localStorage.removeItem("multilog_usuario");
+        return true;
+    }
+
+    return true;
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
+    if (!validarAcessoOperador()) return;
     const usuarioSalvo=localStorage.getItem('multilog_usuario');
     const token=localStorage.getItem('multilog_token');
 
@@ -43,6 +60,11 @@ async function handleLogin(){
         localStorage.setItem('multilog_usuario_offline',JSON.stringify(resultado.usuario));
         localStorage.setItem('multilog_senha_offline', passIn);
 
+        if (resultado.usuario.tipo === "admin") {
+            Toast.error("Administradores devem acessar pela área administrativa.");
+            return;
+        }
+
         usuarioLogado=resultado.usuario;
         errorEl.style.display='none';
         showAppScreen();
@@ -58,7 +80,14 @@ async function handleLogin(){
             userIn === ultimoLogin &&
             passIn === senhaOffline
         ){
-            usuarioLogado = JSON.parse(usuarioSalvo);
+            const usuarioOffline = JSON.parse(usuarioSalvo);
+
+            if (usuarioOffline.tipo === "admin") {
+                Toast.error("Administradores devem acessar pela área administrativa.");
+                return;
+            }
+
+            usuarioLogado = usuarioOffline;
             errorEl.style.display='none';
             Toast.warning('Login offline. Utilizando último usuário autenticado.');
             showAppScreen();
@@ -166,6 +195,11 @@ function showLoginScreen(){
 }
 
 function showAppScreen(){
+    const executanteLogado = document.getElementById("executante-logado");
+
+    if (executanteLogado && usuarioLogado) {
+        executanteLogado.value = usuarioLogado.nome + " (" + usuarioLogado.usuario + ")";
+    }
     const isAdmin = usuarioLogado && usuarioLogado.tipo === "admin";
 
     if (isAdmin) {
