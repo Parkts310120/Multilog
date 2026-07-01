@@ -82,10 +82,16 @@ if(!usuarios.length){
 return Toast.warning('Nenhum funcionário válido encontrado.');
 }
 
+const tamanhoLote=50;
+let totalCadastrado=0;
+
+for(let i=0;i<usuarios.length;i+=tamanhoLote){
+const lote=usuarios.slice(i,i+tamanhoLote);
+
 const resposta=await fetch(`${API_BASE_URL}/api/admin/executantes/massa`,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
-body:JSON.stringify({usuarios})
+body:JSON.stringify({usuarios:lote})
 });
 
 let resultado={};
@@ -97,10 +103,14 @@ resultado={};
 }
 
 if(!resposta.ok){
-return Toast.error(resultado.mensagem||'Erro ao cadastrar funcionários.');
+return Toast.error(resultado.mensagem||`Erro ao cadastrar lote ${Math.floor(i/tamanhoLote)+1}.`);
 }
 
-Toast.success(resultado.mensagem||`${usuarios.length} funcionário(s) cadastrado(s) com sucesso.`);
+totalCadastrado+=lote.length;
+Toast.success(`${totalCadastrado}/${usuarios.length} funcionários cadastrados...`);
+}
+
+Toast.success(`${totalCadastrado} funcionário(s) cadastrados com sucesso.`);
 document.getElementById('usuarios-massa').value='';
 
 }catch(erro){
