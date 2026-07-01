@@ -95,8 +95,7 @@ async function cadastrarExecutantesEmMassa(req,res){
       acao: "CADASTRAR_EXECUTANTES_EM_MASSA",
       tabela: "executantes",
       depois: {
-        total,
-        usuarios
+        total
       }
     });
 
