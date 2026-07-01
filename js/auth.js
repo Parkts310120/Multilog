@@ -39,3 +39,14 @@ function logout() {
 
     window.location.href = "index.html";
 }
+
+function preencherUsuarioHeader() {
+    const usuario = getUsuario();
+    const el = document.getElementById("admin-usuario-logado");
+
+    if (usuario && el) {
+        el.textContent = usuario.nome || usuario.usuario || "Admin";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", preencherUsuarioHeader);

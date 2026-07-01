@@ -62,24 +62,45 @@ body:JSON.stringify({nome,codigo})
 });
 const resultado=await resposta.json();
 if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar executante.');
-Toast.success(resultado.mensagem);
+Toast.success(resultado.mensagem || "Funcionários cadastrados com sucesso.");
 }
 
 async function addUsuariosEmMassa(){
+try{
 const texto=document.getElementById('usuarios-massa').value.trim();
-if(!texto)return Toast.warning('Cole a lista.');
+
+if(!texto){
+return Toast.warning('Cole a lista.');
+}
+
 const usuarios=texto.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
 const p=l.split('_');
 return{usuario:p[0].trim(),senha:p[0].trim(),nome:p.slice(1).join('_').trim()};
 }).filter(u=>u.usuario&&u.nome);
+
+if(!usuarios.length){
+return Toast.warning('Nenhum funcionário válido encontrado.');
+}
+
 const resposta=await fetch(`${API_BASE_URL}/api/admin/executantes/massa`,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${getToken()}`},
 body:JSON.stringify({usuarios})
 });
+
 const resultado=await resposta.json();
-if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar funcionários.');
-Toast.success(resultado.mensagem);
+
+if(!resposta.ok||!resultado.sucesso){
+return Toast.error(resultado.mensagem||'Erro ao cadastrar funcionários.');
+}
+
+Toast.success(resultado.mensagem||`${usuarios.length} funcionário(s) cadastrado(s) com sucesso.`);
+document.getElementById('usuarios-massa').value='';
+
+}catch(erro){
+Toast.error('Erro de conexão ao cadastrar funcionários.');
+console.error(erro);
+}
 }
 
 async function addDepositante(){
@@ -119,7 +140,7 @@ body:JSON.stringify({itens})
 });
 const resultado=await resposta.json();
 if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar depositantes.');
-Toast.success(resultado.mensagem);
+Toast.success(resultado.mensagem || "Funcionários cadastrados com sucesso.");
 }
 
 async function addServicosEmMassa(){
@@ -133,7 +154,7 @@ body:JSON.stringify({itens})
 });
 const resultado=await resposta.json();
 if(!resposta.ok||!resultado.sucesso)return Toast.error(resultado.mensagem||'Erro ao cadastrar serviços.');
-Toast.success(resultado.mensagem);
+Toast.success(resultado.mensagem || "Funcionários cadastrados com sucesso.");
 }
 
 async function addArea(){
@@ -182,7 +203,7 @@ if(!resposta.ok||!resultado.sucesso){
 return Toast.error(resultado.mensagem||'Erro ao cadastrar áreas.');
 }
 
-Toast.success(resultado.mensagem);
+Toast.success(resultado.mensagem || "Funcionários cadastrados com sucesso.");
 }
 
 function abrirTabela(titulo, colunas, linhas) {

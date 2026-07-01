@@ -231,3 +231,32 @@ textarea::placeholder{
     border-color:#1e293b;
     color:#e5e7eb;
 }
+
+/* Sidebar acompanha páginas longas */
+.ml-layout{
+    align-items: stretch;
+}
+
+.ml-sidebar{
+    min-height: calc(100vh - var(--header-height));
+}
+
+.ml-main{
+    padding-bottom: 60px;
+}
+
+/* Ajuste visual para tabelas largas no admin */
+.card[style*="overflow-x:auto"] {
+    scrollbar-color: #64748b #020617;
+    scrollbar-width: thin;
+}
+
+.table {
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 12px 14px;
+    white-space: nowrap;
+}

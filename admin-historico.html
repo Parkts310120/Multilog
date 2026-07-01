@@ -26,8 +26,11 @@
         <span style="color:#64748b;margin-left:8px;">Histórico Admin</span>
     </div>
 
-    <div>
-        <button class="btn btn-secondary btn-sm" onclick="window.location.href='admin-dashboard.html'">⬅️ Voltar</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span id="admin-usuario-logado" style="color:#cbd5e1;font-weight:700;"></span>
+        <button class="btn btn-danger btn-sm" onclick="logout()">
+            Sair
+        </button>
     </div>
 </header>
 
@@ -39,7 +42,6 @@
     <a href="admin-cadastros.html">⚙️ Cadastros</a>
     <a href="admin-cadastros.html#sec-listas">👥 Consultar Listas</a>
     <a href="admin-auditoria.html">🧾 Auditoria</a>
-    <a href="index.html">🏠 Portal</a>
 </aside>
 
 <main class="ml-main">
