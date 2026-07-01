@@ -51,34 +51,50 @@ async function cadastrarExecutante({nome,codigo}){
 }
 
 async function cadastrarExecutantesEmMassa(usuarios){
-  const executantes = usuarios.map(u=>({
-    nome:u.nome,
-    codigo:u.usuario
-  }));
 
-  const usuariosSistema = await Promise.all(
-    usuarios.map(async u=>({
+  const TAMANHO_LOTE = 25;
+
+  let total = 0;
+
+  for(let i=0;i<usuarios.length;i+=TAMANHO_LOTE){
+
+    const lote = usuarios.slice(i,i+TAMANHO_LOTE);
+
+    const executantes = lote.map(u=>({
       nome:u.nome,
-      usuario:u.usuario,
-      senha:await gerarHashSenha(u.senha),
-      tipo:"funcionario",
-      ativo:true
-    }))
-  );
+      codigo:u.usuario
+    }));
 
-  const e1 = await supabase
-    .from("executantes")
-    .upsert(executantes,{onConflict:"codigo"});
+    const usuariosSistema = await Promise.all(
+      lote.map(async u=>({
+        nome:u.nome,
+        usuario:u.usuario,
+        senha:await gerarHashSenha(u.senha),
+        tipo:"funcionario",
+        ativo:true
+      }))
+    );
 
-  if(e1.error) throw new Error(e1.error.message);
+    const e1 = await supabase
+      .from("executantes")
+      .upsert(executantes,{onConflict:"codigo"});
 
-  const e2 = await supabase
-    .from("usuarios_sistema")
-    .upsert(usuariosSistema,{onConflict:"usuario"});
+    if(e1.error){
+      throw new Error(e1.error.message);
+    }
 
-  if(e2.error) throw new Error(e2.error.message);
+    const e2 = await supabase
+      .from("usuarios_sistema")
+      .upsert(usuariosSistema,{onConflict:"usuario"});
 
-  return usuarios.length;
+    if(e2.error){
+      throw new Error(e2.error.message);
+    }
+
+    total += lote.length;
+  }
+
+  return total;
 }
 
 module.exports = {
