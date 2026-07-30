@@ -145,6 +145,18 @@
             <button class="operator-btn operator-btn-start" id="btn-start" onclick="startTracking()">INICIAR</button>
             <button class="operator-btn operator-btn-finish" id="btn-end" onclick="stopTracking()" disabled>FINALIZAR</button>
         </div>
+
+        <div style="margin-top:10px;">
+            <button
+                class="operator-btn operator-btn-pause"
+                id="btn-pause"
+                onclick="togglePauseTracking()"
+                style="width:100%;"
+                disabled
+            >
+                PAUSAR
+            </button>
+        </div>
     </div>
 
     <div id="admin-buttons" class="operator-card" style="display:none;">
@@ -155,6 +167,82 @@
     </div>
 
     <div class="logout-link" onclick="handleLogout()">SAIR DO APLICATIVO</div>
+</div>
+
+<div
+    id="pause-modal"
+    class="operator-modal"
+    aria-hidden="true"
+>
+    <div
+        class="operator-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pause-modal-title"
+    >
+        <h2 id="pause-modal-title">MOTIVO DA PAUSA</h2>
+
+        <label
+            class="operator-label"
+            for="pause-reason"
+        >
+            Selecione o motivo
+        </label>
+
+        <select
+            class="operator-input"
+            id="pause-reason"
+            onchange="alternarCampoOutroMotivo()"
+        >
+            <option value="">SELECIONE</option>
+            <option value="Banheiro">BANHEIRO</option>
+            <option value="Almoço">ALMOÇO</option>
+            <option value="Emergência">EMERGÊNCIA</option>
+            <option value="Reunião">REUNIÃO</option>
+            <option value="Falta de equipamento">
+                FALTA DE EQUIPAMENTO
+            </option>
+            <option value="Outro">OUTRO</option>
+        </select>
+
+        <div
+            id="pause-other-group"
+            style="display:none;margin-top:14px;"
+        >
+            <label
+                class="operator-label"
+                for="pause-other-reason"
+            >
+                Informe o motivo
+            </label>
+
+            <input
+                class="operator-input"
+                type="text"
+                id="pause-other-reason"
+                maxlength="100"
+                placeholder="DIGITE O MOTIVO"
+            >
+        </div>
+
+        <div class="operator-modal-actions">
+            <button
+                class="operator-btn operator-btn-secondary"
+                type="button"
+                onclick="fecharModalPausa()"
+            >
+                CANCELAR
+            </button>
+
+            <button
+                class="operator-btn operator-btn-pause"
+                type="button"
+                onclick="confirmarPausaTracking()"
+            >
+                CONFIRMAR PAUSA
+            </button>
+        </div>
+    </div>
 </div>
 
 <script src="../js/config.js"></script>

@@ -238,6 +238,8 @@ async function initAppLogic(){
 
     document.getElementById('btn-start').disabled=false;
     document.getElementById('btn-end').disabled=true;
+    document.getElementById('btn-pause').disabled=true;
+    document.getElementById('btn-pause').innerText='PAUSAR';
 
     alternarQuantidadeEsperada();
 
@@ -328,34 +330,295 @@ function preencherSelectsCadastros(depositantes, servicos, areas){
     }
 }
 
-function updateStatusUI(isRunning){
+function formatarCronometro(diffMs){
+    const diff=Math.max(0,diffMs);
+
+    const hrs=Math.floor(diff/3600000)
+        .toString()
+        .padStart(2,'0');
+
+    const mins=Math.floor((diff%3600000)/60000)
+        .toString()
+        .padStart(2,'0');
+
+    const secs=Math.floor((diff%60000)/1000)
+        .toString()
+        .padStart(2,'0');
+
+    return `${hrs}:${mins}:${secs}`;
+}
+
+function formatarDuracaoMs(diffMs){
+    const totalSegundos=Math.max(
+        0,
+        Math.round(diffMs/1000)
+    );
+
+    const totalMinutos=Math.round(diffMs/60000);
+
+    if(totalMinutos<1){
+        return `${totalSegundos} segundos`;
+    }
+
+    if(totalMinutos<60){
+        return `${totalMinutos} min`;
+    }
+
+    return `${Math.floor(totalMinutos/60)}h e ${totalMinutos%60}min`;
+}
+
+function calcularTempoProdutivoMs(agora=new Date()){
+    if(!currentSession){
+        return 0;
+    }
+
+    const inicio=new Date(currentSession.startTime);
+
+    let pausaAtualMs=0;
+
+    if(
+        currentSession.isPaused &&
+        currentSession.pauseStartedAt
+    ){
+        pausaAtualMs=Math.max(
+            0,
+            agora-new Date(currentSession.pauseStartedAt)
+        );
+    }
+
+    const totalPausadoMs=
+        (currentSession.totalPausedMs||0)+pausaAtualMs;
+
+    return Math.max(
+        0,
+        agora-inicio-totalPausadoMs
+    );
+}
+
+function updateStatusUI(isRunning,isPaused=false){
     const container=document.getElementById('status-container');
     const timerEl=document.getElementById('live-timer');
 
-    if(isRunning){
-        container.innerHTML='<span class="status-badge status-running">Atividade em andamento...</span>';
+    if(isRunning && isPaused){
+        container.innerHTML=
+            '<span class="status-badge status-running">ATIVIDADE PAUSADA</span>';
+
         timerEl.style.display='block';
-    }else{
-        container.innerHTML='<span class="status-badge status-free">Pronto para iniciar</span>';
-        timerEl.style.display='none';
-        timerEl.innerText='00:00:00';
+        return;
     }
+
+    if(isRunning){
+        container.innerHTML=
+            '<span class="status-badge status-running">Atividade em andamento...</span>';
+
+        timerEl.style.display='block';
+        return;
+    }
+
+    container.innerHTML=
+        '<span class="status-badge status-free">Pronto para iniciar</span>';
+
+    timerEl.style.display='none';
+    timerEl.innerText='00:00:00';
 }
 
-function startLiveTimerUpdate(startTime){
+function startLiveTimerUpdate(){
     const timerEl=document.getElementById('live-timer');
+
     clearInterval(timerInterval);
 
     function update(){
-        const diff=new Date()-startTime;
-        const hrs=Math.floor(diff/3600000).toString().padStart(2,'0');
-        const mins=Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
-        const secs=Math.floor((diff%60000)/1000).toString().padStart(2,'0');
-        timerEl.innerText=`${hrs}:${mins}:${secs}`;
+        if(!currentSession){
+            return;
+        }
+
+        const tempoProdutivoMs=
+            calcularTempoProdutivoMs(new Date());
+
+        timerEl.innerText=
+            formatarCronometro(tempoProdutivoMs);
     }
 
     update();
+
     timerInterval=setInterval(update,1000);
+}
+
+function finalizarPausaAtual(endTime=new Date()){
+    if(
+        !currentSession ||
+        !currentSession.isPaused ||
+        !currentSession.pauseStartedAt
+    ){
+        return 0;
+    }
+
+    const inicioPausa=
+        new Date(currentSession.pauseStartedAt);
+
+    const duracaoPausaMs=Math.max(
+        0,
+        endTime-inicioPausa
+    );
+
+    currentSession.totalPausedMs=
+        (currentSession.totalPausedMs||0)+duracaoPausaMs;
+
+    if(!Array.isArray(currentSession.pausas)){
+        currentSession.pausas=[];
+    }
+
+    for(
+        let indice=currentSession.pausas.length-1;
+        indice>=0;
+        indice--
+    ){
+        const pausa=currentSession.pausas[indice];
+
+        if(!pausa.fim){
+            pausa.fim=endTime.toISOString();
+            pausa.duracao_segundos=
+                Math.round(duracaoPausaMs/1000);
+
+            break;
+        }
+    }
+
+    currentSession.isPaused=false;
+    currentSession.pauseStartedAt=null;
+
+    return duracaoPausaMs;
+}
+
+function abrirModalPausa(){
+    const modal=document.getElementById('pause-modal');
+    const motivo=document.getElementById('pause-reason');
+    const outro=document.getElementById('pause-other-reason');
+    const grupoOutro=document.getElementById('pause-other-group');
+
+    motivo.value='';
+    outro.value='';
+    grupoOutro.style.display='none';
+
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+
+    setTimeout(()=>{
+        motivo.focus();
+    },50);
+}
+
+function fecharModalPausa(){
+    const modal=document.getElementById('pause-modal');
+
+    modal.style.display='none';
+    modal.setAttribute('aria-hidden','true');
+}
+
+function alternarCampoOutroMotivo(){
+    const motivo=document.getElementById('pause-reason').value;
+    const grupoOutro=document.getElementById('pause-other-group');
+    const outro=document.getElementById('pause-other-reason');
+
+    if(motivo==='Outro'){
+        grupoOutro.style.display='block';
+
+        setTimeout(()=>{
+            outro.focus();
+        },50);
+
+        return;
+    }
+
+    grupoOutro.style.display='none';
+    outro.value='';
+}
+
+function confirmarPausaTracking(){
+    if(!currentSession){
+        fecharModalPausa();
+        Toast.warning('Não existe atividade em andamento.');
+        return;
+    }
+
+    if(currentSession.isPaused){
+        fecharModalPausa();
+        return;
+    }
+
+    const motivoSelecionado=
+        document.getElementById('pause-reason').value;
+
+    const outroMotivo=
+        document
+            .getElementById('pause-other-reason')
+            .value
+            .trim();
+
+    if(!motivoSelecionado){
+        Toast.warning('Selecione o motivo da pausa.');
+        return;
+    }
+
+    if(
+        motivoSelecionado==='Outro' &&
+        !outroMotivo
+    ){
+        Toast.warning('Informe o motivo da pausa.');
+        return;
+    }
+
+    const motivoFinal=
+        motivoSelecionado==='Outro'
+            ? outroMotivo
+            : motivoSelecionado;
+
+    const agora=new Date();
+
+    currentSession.isPaused=true;
+    currentSession.pauseStartedAt=agora.toISOString();
+
+    if(!Array.isArray(currentSession.pausas)){
+        currentSession.pausas=[];
+    }
+
+    currentSession.pausas.push({
+        motivo:motivoFinal,
+        inicio:agora.toISOString(),
+        fim:null,
+        duracao_segundos:null
+    });
+
+    document.getElementById('btn-pause').innerText='RETOMAR';
+
+    fecharModalPausa();
+    updateStatusUI(true,true);
+
+    Toast.warning(
+        `Atividade pausada. Motivo: ${motivoFinal}.`
+    );
+}
+
+function togglePauseTracking(){
+    if(!currentSession){
+        Toast.warning('Não existe atividade em andamento.');
+        return;
+    }
+
+    const btnPause=document.getElementById('btn-pause');
+
+    if(!currentSession.isPaused){
+        abrirModalPausa();
+        return;
+    }
+
+    finalizarPausaAtual(new Date());
+
+    btnPause.innerText='PAUSAR';
+
+    updateStatusUI(true,false);
+
+    Toast.success('Atividade retomada.');
 }
 
 function alternarQuantidadeEsperada(){
@@ -407,7 +670,11 @@ function startTracking(){
         temQuantidadeEsperada,
         quantidadeEsperada,
         unidade,
-        startTime:startTime.toISOString()
+        startTime:startTime.toISOString(),
+        isPaused:false,
+        pauseStartedAt:null,
+        totalPausedMs:0,
+        pausas:[]
     };
 
     document.getElementById('depositor-name').disabled=true;
@@ -426,9 +693,11 @@ function startTracking(){
 
     document.getElementById('btn-start').disabled=true;
     document.getElementById('btn-end').disabled=false;
+    document.getElementById('btn-pause').disabled=false;
+    document.getElementById('btn-pause').innerText='PAUSAR';
 
-    startLiveTimerUpdate(startTime);
-    updateStatusUI(true);
+    startLiveTimerUpdate();
+    updateStatusUI(true,false);
 }
 
 async function stopTracking(){
@@ -448,24 +717,28 @@ async function stopTracking(){
         return;
     }
 
+    const endTime=new Date();
+
+    if(currentSession.isPaused){
+        finalizarPausaAtual(endTime);
+    }
+
     clearInterval(timerInterval);
 
-    const endTime=new Date();
     const startTime=new Date(currentSession.startTime);
-    const diffMs=endTime-startTime;
+    const totalPausedMs=currentSession.totalPausedMs||0;
+
+    const diffMs=Math.max(
+        0,
+        endTime-startTime-totalPausedMs
+    );
+
     const diffSegundos=Math.round(diffMs/1000);
-    const diffMins=Math.round(diffMs/60000);
     const horas=diffMs/3600000;
 
-    let durationText='';
-
-    if(diffMins<1){
-        durationText=`${diffSegundos} segundos`;
-    }else if(diffMins<60){
-        durationText=`${diffMins} min`;
-    }else{
-        durationText=`${Math.floor(diffMins/60)}h e ${diffMins%60}min`;
-    }
+    const durationText=formatarDuracaoMs(diffMs);
+    const pauseDurationText=
+        formatarDuracaoMs(totalPausedMs);
 
     const produtividadeHora=horas>0 ? Number((quantidadeRealizada/horas).toFixed(2)) : 0;
     const metaHora=0;
@@ -475,6 +748,20 @@ async function stopTracking(){
         crypto.randomUUID ?
         crypto.randomUUID() :
         `local_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+    const tempoTotalSegundos=Math.max(
+        0,
+        Math.round((endTime-startTime)/1000)
+    );
+
+    const tempoPausadoSegundos=Math.max(
+        0,
+        Math.round(totalPausedMs/1000)
+    );
+
+    const pausas=Array.isArray(currentSession.pausas)
+        ? currentSession.pausas
+        : [];
 
     const dadosAtividade={
         id_local:idLocal,
@@ -495,7 +782,10 @@ async function stopTracking(){
         inicio:startTime.toISOString(),
         fim:endTime.toISOString(),
         duracao:durationText,
-        duracao_segundos:diffSegundos
+        duracao_segundos:diffSegundos,
+        tempo_total_segundos:tempoTotalSegundos,
+        tempo_pausado_segundos:tempoPausadoSegundos,
+        pausas
     };
 
     let salvoOffline=false;
@@ -509,7 +799,7 @@ async function stopTracking(){
         salvoOffline=true;
     }
 
-    let mensagemFinal=`✅ Contagem concluída!\n\n⏱️ Tempo Total: ${durationText}\n✅ Realizado: ${quantidadeRealizada}`;
+    let mensagemFinal=`✅ Contagem concluída!\n\n⏱️ Tempo produtivo: ${durationText}\n⏸️ Tempo pausado: ${pauseDurationText}\n✅ Realizado: ${quantidadeRealizada}`;
 
     if(currentSession.temQuantidadeEsperada==='sim'){
         mensagemFinal+=`\n📦 Esperado: ${currentSession.quantidadeEsperada}`;

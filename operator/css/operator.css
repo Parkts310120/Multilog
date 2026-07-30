@@ -191,3 +191,148 @@
     border-color: #39ff14 !important;
     box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.25) !important;
 }
+
+
+/* Botão de pausa da atividade */
+.operator-btn-pause {
+    background: #facc15;
+    border: 2px solid #fde047;
+    color: #111827;
+    font-weight: 800;
+}
+
+.operator-btn-pause:hover:not(:disabled) {
+    background: #fde047;
+    border-color: #fef08a;
+}
+
+.operator-btn-pause:active:not(:disabled) {
+    background: #eab308;
+}
+
+.operator-btn-pause:disabled {
+    background: #713f12;
+    border-color: #854d0e;
+    color: #fef3c7;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+
+/* Modal utilizado para selecionar o motivo da pausa */
+.operator-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.operator-modal-card {
+    width: min(100%, 480px);
+    padding: 22px;
+    border: 2px solid #facc15;
+    border-radius: 10px;
+    background: #020617;
+    box-shadow: 0 0 25px rgba(250, 204, 21, 0.25);
+}
+
+.operator-modal-card h2 {
+    margin: 0 0 20px;
+    color: #facc15;
+    text-align: center;
+}
+
+.operator-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+@media (max-width: 520px) {
+    .operator-modal-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Correção definitiva do botão PAUSAR */
+#btn-pause {
+    background: #facc15 !important;
+    border: 2px solid #eab308 !important;
+    color: #111827 !important;
+    font-weight: 900 !important;
+    opacity: 1 !important;
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.35);
+}
+
+#btn-pause:hover:not(:disabled) {
+    background: #fde047 !important;
+    border-color: #fef08a !important;
+    color: #111827 !important;
+}
+
+#btn-pause:active:not(:disabled) {
+    background: #eab308 !important;
+    transform: translateY(1px);
+}
+
+#btn-pause:disabled {
+    background: #3f350b !important;
+    border-color: #6b590d !important;
+    color: #a89235 !important;
+    opacity: 0.65 !important;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Botão PAUSAR / RETOMAR */
+button#btn-pause.operator-btn {
+    background-color: #facc15 !important;
+    background-image: none !important;
+    border: 2px solid #eab308 !important;
+    color: #111827 !important;
+    opacity: 1 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.35) !important;
+}
+
+button#btn-pause.operator-btn:hover:not(:disabled) {
+    background-color: #fde047 !important;
+    color: #111827 !important;
+}
+
+button#btn-pause.operator-btn:disabled {
+    background-color: #3f350b !important;
+    border-color: #6b590d !important;
+    color: #a89235 !important;
+    opacity: 0.65 !important;
+    box-shadow: none !important;
+}
+
+/* Botão PAUSAR / RETOMAR */
+button#btn-pause.operator-btn {
+    background-color: #facc15 !important;
+    background-image: none !important;
+    border: 2px solid #eab308 !important;
+    color: #111827 !important;
+    opacity: 1 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.35) !important;
+}
+
+button#btn-pause.operator-btn:hover:not(:disabled) {
+    background-color: #fde047 !important;
+    color: #111827 !important;
+}
+
+button#btn-pause.operator-btn:disabled {
+    background-color: #3f350b !important;
+    border-color: #6b590d !important;
+    color: #a89235 !important;
+    opacity: 0.65 !important;
+    box-shadow: none !important;
+}

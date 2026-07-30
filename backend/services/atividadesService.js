@@ -23,6 +23,15 @@ async function salvarAtividade(dados){
       fim: dados.fim,
       duracao: dados.duracao,
       duracao_segundos: dados.duracao_segundos,
+      tempo_total_segundos:
+        dados.tempo_total_segundos ??
+        dados.duracao_segundos ??
+        0,
+      tempo_pausado_segundos:
+        dados.tempo_pausado_segundos ?? 0,
+      pausas: Array.isArray(dados.pausas)
+        ? dados.pausas
+        : [],
       visivel: true
     });
 
