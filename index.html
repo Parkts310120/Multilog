@@ -70,5 +70,37 @@ body{
     </div>
 </div>
 
+
+<!-- SERVICE WORKER REGISTRO INICIO -->
+<script>
+if("serviceWorker" in navigator){
+    window.addEventListener("load", async () => {
+        try{
+            const registro =
+                await navigator.serviceWorker.register(
+                    "/service-worker.js",
+                    {
+                        scope: "/"
+                    }
+                );
+
+            await registro.update();
+
+            console.log(
+                "Service Worker ativo:",
+                registro.scope
+            );
+        }catch(erro){
+            console.error(
+                "Erro ao registrar Service Worker:",
+                erro
+            );
+        }
+    });
+}
+</script>
+<!-- SERVICE WORKER REGISTRO FIM -->
+
+
 </body>
 </html>

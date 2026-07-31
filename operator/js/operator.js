@@ -3,6 +3,404 @@ let currentSession=null;
 let timerInterval=null;
 let finalizacaoEmAndamento=false;
 
+
+// === PERSISTENCIA DA SESSAO ATIVA INICIO ===
+
+const CHAVE_SESSAO_ATIVA_PREFIXO =
+    'multilog_sessao_ativa_operador_';
+
+function obterChaveSessaoAtiva(){
+    if(
+        !usuarioLogado ||
+        !usuarioLogado.usuario
+    ){
+        return null;
+    }
+
+    return (
+        CHAVE_SESSAO_ATIVA_PREFIXO +
+        usuarioLogado.usuario
+    );
+}
+
+function salvarSessaoAtivaLocal(){
+    if(
+        !currentSession ||
+        !usuarioLogado
+    ){
+        return;
+    }
+
+    const chave = obterChaveSessaoAtiva();
+
+    if(!chave){
+        return;
+    }
+
+    const quantidadeRealizada =
+        document.getElementById(
+            'quantidade-realizada'
+        )?.value || '';
+
+    const observacao =
+        document.getElementById(
+            'observacao'
+        )?.value || '';
+
+    const dadosPersistidos = {
+        versao: 1,
+        operador: usuarioLogado.usuario,
+        sessao: currentSession,
+        rascunho: {
+            quantidadeRealizada,
+            observacao
+        },
+        salvoEm: new Date().toISOString()
+    };
+
+    try{
+        localStorage.setItem(
+            chave,
+            JSON.stringify(dadosPersistidos)
+        );
+    }catch(erro){
+        console.error(
+            'Erro ao salvar sessão ativa:',
+            erro
+        );
+    }
+}
+
+function limparSessaoAtivaLocal(){
+    const chave = obterChaveSessaoAtiva();
+
+    if(!chave){
+        return;
+    }
+
+    localStorage.removeItem(chave);
+}
+
+function preencherCampoRestaurado(
+    id,
+    valor
+){
+    const campo =
+        document.getElementById(id);
+
+    if(!campo){
+        return;
+    }
+
+    const valorNormalizado =
+        valor === null ||
+        valor === undefined
+            ? ''
+            : String(valor);
+
+    if(
+        campo.tagName === 'SELECT' &&
+        valorNormalizado &&
+        !Array.from(campo.options).some(
+            opcao =>
+                opcao.value === valorNormalizado
+        )
+    ){
+        campo.add(
+            new Option(
+                valorNormalizado,
+                valorNormalizado
+            )
+        );
+    }
+
+    campo.value = valorNormalizado;
+}
+
+function configurarPersistenciaSessaoAtiva(){
+    const camposRascunho = [
+        'quantidade-realizada',
+        'observacao'
+    ];
+
+    camposRascunho.forEach(id => {
+        const campo =
+            document.getElementById(id);
+
+        if(
+            !campo ||
+            campo.dataset.persistenciaConfigurada
+        ){
+            return;
+        }
+
+        campo.addEventListener(
+            'input',
+            salvarSessaoAtivaLocal
+        );
+
+        campo.addEventListener(
+            'change',
+            salvarSessaoAtivaLocal
+        );
+
+        campo.dataset.persistenciaConfigurada =
+            'true';
+    });
+
+    window.addEventListener(
+        'beforeunload',
+        salvarSessaoAtivaLocal
+    );
+
+    document.addEventListener(
+        'visibilitychange',
+        () => {
+            if(
+                document.visibilityState ===
+                'hidden'
+            ){
+                salvarSessaoAtivaLocal();
+            }
+        }
+    );
+}
+
+function restaurarSessaoAtivaLocal(){
+    if(
+        currentSession ||
+        !usuarioLogado
+    ){
+        return false;
+    }
+
+    const chave = obterChaveSessaoAtiva();
+
+    if(!chave){
+        return false;
+    }
+
+    const salvo =
+        localStorage.getItem(chave);
+
+    if(!salvo){
+        return false;
+    }
+
+    let dados;
+
+    try{
+        dados = JSON.parse(salvo);
+    }catch(erro){
+        console.error(
+            'Sessão local inválida:',
+            erro
+        );
+
+        localStorage.removeItem(chave);
+        return false;
+    }
+
+    if(
+        !dados ||
+        dados.operador !==
+            usuarioLogado.usuario ||
+        !dados.sessao ||
+        !dados.sessao.startTime
+    ){
+        return false;
+    }
+
+    const inicio =
+        new Date(dados.sessao.startTime);
+
+    if(Number.isNaN(inicio.getTime())){
+        localStorage.removeItem(chave);
+        return false;
+    }
+
+    currentSession = dados.sessao;
+
+    currentSession.totalPausedMs =
+        Number(
+            currentSession.totalPausedMs
+        ) || 0;
+
+    currentSession.pausas =
+        Array.isArray(currentSession.pausas)
+            ? currentSession.pausas
+            : [];
+
+    currentSession.isPaused =
+        Boolean(currentSession.isPaused);
+
+    if(
+        currentSession.isPaused &&
+        !currentSession.pauseStartedAt
+    ){
+        currentSession.isPaused = false;
+    }
+
+    if(!currentSession.isPaused){
+        currentSession.pauseStartedAt = null;
+    }
+
+    mostrarTelaOperador('app-screen'); // abrir tela da atividade restaurada
+
+    preencherCampoRestaurado(
+        'depositor-name',
+        currentSession.depositor
+    );
+
+    preencherCampoRestaurado(
+        'activity-name',
+        currentSession.name
+    );
+
+    preencherCampoRestaurado(
+        'area-name',
+        currentSession.area
+    );
+
+    preencherCampoRestaurado(
+        'lote',
+        currentSession.lote
+    );
+
+    preencherCampoRestaurado(
+        'tem-quantidade-esperada',
+        currentSession.temQuantidadeEsperada
+    );
+
+    preencherCampoRestaurado(
+        'quantidade-esperada',
+        currentSession.quantidadeEsperada
+    );
+
+    preencherCampoRestaurado(
+        'unidade',
+        currentSession.unidade
+    );
+
+    preencherCampoRestaurado(
+        'quantidade-realizada',
+        dados.rascunho?.quantidadeRealizada
+    );
+
+    preencherCampoRestaurado(
+        'observacao',
+        dados.rascunho?.observacao
+    );
+
+    alternarQuantidadeEsperada();
+
+    [
+        'depositor-name',
+        'activity-name',
+        'area-name',
+        'lote',
+        'tem-quantidade-esperada',
+        'quantidade-esperada',
+        'unidade'
+    ].forEach(id => {
+        const campo =
+            document.getElementById(id);
+
+        if(campo){
+            campo.disabled = true;
+        }
+    });
+
+    const grupoQuantidade =
+        document.getElementById(
+            'grupo-quantidade-realizada'
+        );
+
+    const grupoObservacao =
+        document.getElementById(
+            'grupo-observacao'
+        );
+
+    if(grupoQuantidade){
+        grupoQuantidade.style.display =
+            'block';
+    }
+
+    if(grupoObservacao){
+        grupoObservacao.style.display =
+            'block';
+    }
+
+    const quantidadeRealizada =
+        document.getElementById(
+            'quantidade-realizada'
+        );
+
+    const observacao =
+        document.getElementById(
+            'observacao'
+        );
+
+    if(quantidadeRealizada){
+        quantidadeRealizada.disabled =
+            false;
+    }
+
+    if(observacao){
+        observacao.disabled = false;
+    }
+
+    const btnStart =
+        document.getElementById(
+            'btn-start'
+        );
+
+    const btnPause =
+        document.getElementById(
+            'btn-pause'
+        );
+
+    const btnEnd =
+        document.getElementById(
+            'btn-end'
+        );
+
+    if(btnStart){
+        btnStart.disabled = true;
+    }
+
+    if(btnPause){
+        btnPause.disabled = false;
+
+        btnPause.innerText =
+            currentSession.isPaused
+                ? 'RETOMAR'
+                : 'PAUSAR';
+    }
+
+    if(btnEnd){
+        btnEnd.disabled = false;
+    }
+
+    updateStatusUI(
+        true,
+        currentSession.isPaused
+    );
+
+    startLiveTimerUpdate();
+
+    Toast.warning(
+        currentSession.isPaused
+            ? 'Atividade pausada restaurada.'
+            : 'Atividade em andamento restaurada.'
+    );
+
+    return true;
+}
+
+// === PERSISTENCIA DA SESSAO ATIVA FIM ===
+
+
 function validarAcessoOperador() {
     const usuarioSalvo = localStorage.getItem("multilog_usuario");
 
@@ -34,6 +432,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
 
     atualizarIndicadorOffline();
+    configurarPersistenciaSessaoAtiva();
+    restaurarSessaoAtivaLocal(); // restaurar sessao ativa ao abrir
 
     setInterval(() => {
         atualizarIndicadorOffline();
@@ -590,6 +990,8 @@ function confirmarPausaTracking(){
         duracao_segundos:null
     });
 
+    salvarSessaoAtivaLocal(); // salvar sessao ao pausar
+
     document.getElementById('btn-pause').innerText='RETOMAR';
 
     fecharModalPausa();
@@ -614,6 +1016,8 @@ function togglePauseTracking(){
     }
 
     finalizarPausaAtual(new Date());
+
+    salvarSessaoAtivaLocal(); // salvar sessao ao retomar
 
     btnPause.innerText='PAUSAR';
 
@@ -677,6 +1081,8 @@ function startTracking(){
         totalPausedMs:0,
         pausas:[]
     };
+
+    salvarSessaoAtivaLocal(); // salvar sessao apos iniciar
 
     document.getElementById('depositor-name').disabled=true;
     document.getElementById('activity-name').disabled=true;
@@ -930,6 +1336,8 @@ async function stopTracking(){
     
     await atualizarIndicadorOffline();
     Toast.success(mensagemFinal);
+
+    limparSessaoAtivaLocal(); // limpar sessao apos finalizar
 
     currentSession=null;
 
