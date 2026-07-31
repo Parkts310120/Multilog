@@ -1,6 +1,7 @@
 let usuarioLogado=null;
 let currentSession=null;
 let timerInterval=null;
+let finalizacaoEmAndamento=false;
 
 function validarAcessoOperador() {
     const usuarioSalvo = localStorage.getItem("multilog_usuario");
@@ -698,6 +699,121 @@ function startTracking(){
 
     startLiveTimerUpdate();
     updateStatusUI(true,false);
+}
+
+
+
+function abrirModalFinalizacao(){
+    const modal=
+        document.getElementById('finish-modal');
+
+    const mensagem=
+        document.getElementById('finish-modal-message');
+
+    const cancelar=
+        document.getElementById('btn-cancel-finish');
+
+    const confirmar=
+        document.getElementById('btn-confirm-finish');
+
+    if(currentSession?.isPaused){
+        mensagem.innerText=
+            'A atividade está pausada. Ao finalizar, a pausa atual será encerrada e a atividade será registrada. Deseja continuar?';
+    }else{
+        mensagem.innerText=
+            'Tem certeza de que deseja finalizar esta atividade? Depois de registrada, ela não poderá ser retomada.';
+    }
+
+    cancelar.disabled=false;
+    confirmar.disabled=false;
+    confirmar.innerText='SIM, FINALIZAR';
+
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+
+    setTimeout(()=>{
+        cancelar.focus();
+    },50);
+}
+
+function fecharModalFinalizacao(){
+    if(finalizacaoEmAndamento){
+        return;
+    }
+
+    const modal=
+        document.getElementById('finish-modal');
+
+    modal.style.display='none';
+    modal.setAttribute('aria-hidden','true');
+}
+
+function solicitarFinalizacaoTracking(){
+    if(!currentSession){
+        Toast.warning(
+            'Não existe atividade em andamento.'
+        );
+        return;
+    }
+
+    const quantidadeRealizada=Number(
+        document
+            .getElementById('quantidade-realizada')
+            .value || 0
+    );
+
+    if(quantidadeRealizada<=0){
+        Toast.warning(
+            'Informe a quantidade realizada antes de finalizar.'
+        );
+        return;
+    }
+
+    abrirModalFinalizacao();
+}
+
+async function confirmarFinalizacaoTracking(){
+    if(finalizacaoEmAndamento){
+        return;
+    }
+
+    finalizacaoEmAndamento=true;
+
+    const modal=
+        document.getElementById('finish-modal');
+
+    const cancelar=
+        document.getElementById('btn-cancel-finish');
+
+    const confirmar=
+        document.getElementById('btn-confirm-finish');
+
+    cancelar.disabled=true;
+    confirmar.disabled=true;
+    confirmar.innerText='FINALIZANDO...';
+
+    try{
+        await stopTracking();
+
+        modal.style.display='none';
+        modal.setAttribute('aria-hidden','true');
+    }catch(erro){
+        console.error(
+            'Erro ao finalizar atividade:',
+            erro
+        );
+
+        Toast.error(
+            erro.message ||
+            'Não foi possível finalizar a atividade.'
+        );
+    }finally{
+        finalizacaoEmAndamento=false;
+
+        cancelar.disabled=false;
+        confirmar.disabled=false;
+        confirmar.innerText='SIM, FINALIZAR';
+    }
 }
 
 async function stopTracking(){

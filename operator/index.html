@@ -141,21 +141,18 @@
             </div>
         </div>
 
-        <div class="operator-actions">
+                <div class="operator-actions">
             <button class="operator-btn operator-btn-start" id="btn-start" onclick="startTracking()">INICIAR</button>
-            <button class="operator-btn operator-btn-finish" id="btn-end" onclick="stopTracking()" disabled>FINALIZAR</button>
-        </div>
-
-        <div style="margin-top:10px;">
             <button
-                class="operator-btn operator-btn-pause"
-                id="btn-pause"
-                onclick="togglePauseTracking()"
-                style="width:100%;"
-                disabled
+            class="operator-btn operator-btn-pause"
+            id="btn-pause"
+            onclick="togglePauseTracking()"
+            style="width:100%;"
+            disabled
             >
-                PAUSAR
+            PAUSAR
             </button>
+            <button class="operator-btn operator-btn-finish" id="btn-end" onclick="solicitarFinalizacaoTracking()" disabled>FINALIZAR</button>
         </div>
     </div>
 
@@ -167,6 +164,51 @@
     </div>
 
     <div class="logout-link" onclick="handleLogout()">SAIR DO APLICATIVO</div>
+</div>
+
+
+<div
+    id="finish-modal"
+    class="operator-modal"
+    aria-hidden="true"
+>
+    <div
+        class="operator-modal-card finish-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="finish-modal-title"
+    >
+        <div class="finish-modal-icon">!</div>
+
+        <h2 id="finish-modal-title">
+            FINALIZAR ATIVIDADE?
+        </h2>
+
+        <p id="finish-modal-message">
+            Tem certeza de que deseja finalizar esta atividade?
+            Depois de registrada, ela não poderá ser retomada.
+        </p>
+
+        <div class="operator-modal-actions">
+            <button
+                class="operator-btn operator-btn-secondary"
+                id="btn-cancel-finish"
+                type="button"
+                onclick="fecharModalFinalizacao()"
+            >
+                CONTINUAR ATIVIDADE
+            </button>
+
+            <button
+                class="operator-btn operator-btn-finish"
+                id="btn-confirm-finish"
+                type="button"
+                onclick="confirmarFinalizacaoTracking()"
+            >
+                SIM, FINALIZAR
+            </button>
+        </div>
+    </div>
 </div>
 
 <div

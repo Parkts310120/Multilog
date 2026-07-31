@@ -336,3 +336,174 @@ button#btn-pause.operator-btn:disabled {
     opacity: 0.65 !important;
     box-shadow: none !important;
 }
+
+
+/* =====================================================
+   CONFIRMAÇÃO DE FINALIZAÇÃO
+===================================================== */
+
+#finish-modal {
+    backdrop-filter: blur(4px);
+}
+
+#finish-modal .finish-modal-card {
+    width: min(100%, 480px);
+    border: 2px solid #ef4444;
+    background: #020617;
+    box-shadow:
+        0 0 18px rgba(239, 68, 68, 0.35),
+        0 0 45px rgba(239, 68, 68, 0.18);
+}
+
+#finish-modal .finish-modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 16px;
+
+    border: 3px solid #ef4444;
+    border-radius: 50%;
+
+    color: #f87171;
+
+    font-size: 2rem;
+    font-weight: 900;
+}
+
+#finish-modal h2 {
+    margin: 0 0 16px;
+
+    color: #f87171;
+
+    text-align: center;
+    font-size: 1.45rem;
+}
+
+#finish-modal p {
+    margin: 0;
+
+    color: #e5e7eb;
+
+    text-align: center;
+    line-height: 1.6;
+}
+
+#finish-modal #btn-confirm-finish {
+    background: #7f1d1d !important;
+    border: 2px solid #ef4444 !important;
+    color: #fecaca !important;
+    opacity: 1 !important;
+}
+
+#finish-modal #btn-confirm-finish:hover:not(:disabled) {
+    background: #991b1b !important;
+    color: #ffffff !important;
+}
+
+#finish-modal #btn-confirm-finish:disabled {
+    opacity: 0.55 !important;
+}
+
+
+/* === FIX MODAL FINALIZACAO INICIO === */
+
+/* Modal de confirmação sobreposto à tela */
+#finish-modal.operator-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100000 !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    padding: 20px !important;
+    margin: 0 !important;
+
+    background: rgba(0, 0, 0, 0.86) !important;
+    backdrop-filter: blur(5px);
+}
+
+/* Escondido normalmente */
+#finish-modal[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Visível somente após clicar em FINALIZAR */
+#finish-modal[aria-hidden="false"] {
+    display: flex !important;
+}
+
+#finish-modal .finish-modal-card {
+    position: relative !important;
+
+    width: min(100%, 480px) !important;
+    max-height: 90vh !important;
+
+    margin: 0 !important;
+    padding: 24px !important;
+
+    overflow-y: auto !important;
+
+    border: 2px solid #ef4444 !important;
+    border-radius: 12px !important;
+
+    background: #020617 !important;
+
+    box-shadow:
+        0 0 20px rgba(239, 68, 68, 0.38),
+        0 0 50px rgba(239, 68, 68, 0.18) !important;
+}
+
+#finish-modal .operator-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+
+    margin-top: 22px !important;
+}
+
+@media (max-width: 520px) {
+    #finish-modal .operator-modal-actions {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* === FIX MODAL FINALIZACAO FIM === */
+
+
+/* === BOTOES OPERACIONAIS 3 COLUNAS INICIO === */
+
+.operator-actions {
+    display: grid !important;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+}
+
+.operator-actions .operator-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 520px) {
+    .operator-actions {
+        gap: 5px !important;
+    }
+
+    .operator-actions .operator-btn {
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+        font-size: 0.78rem !important;
+    }
+}
+
+/* === BOTOES OPERACIONAIS 3 COLUNAS FIM === */
+
