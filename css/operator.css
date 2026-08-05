@@ -457,3 +457,111 @@ button#btn-pause.operator-btn:disabled {
 
 /* === BOTOES OPERACIONAIS 3 COLUNAS FIM === */
 
+/* === ACUMULADOR DE ITENS LIMPO INICIO === */
+
+#modo-contagem {
+    margin-bottom: 12px;
+}
+
+#contagem-total-container,
+#contagem-itens-container {
+    margin-top: 12px;
+}
+
+#btn-adicionar-item {
+    width: 100% !important;
+    margin-top: 10px !important;
+    background: #052e16 !important;
+    border-color: #39ff14 !important;
+    color: #39ff14 !important;
+}
+
+#lista-itens-contados {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.item-contado-registrado {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr) 90px auto;
+    gap: 10px;
+    align-items: center;
+
+    padding: 11px 12px;
+
+    border: 1px solid #166534;
+    border-radius: 6px;
+
+    background: #020617;
+}
+
+.item-contado-registrado-nome {
+    color: #e5e7eb;
+    font-weight: 900;
+}
+
+.item-contado-registrado-quantidade {
+    color: #39ff14;
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+.item-contado-remover {
+    min-height: 40px;
+    padding: 0 10px;
+
+    border: 1px solid #ef4444;
+    border-radius: 5px;
+
+    background: #450a0a;
+    color: #fca5a5;
+
+    font-family: "Consolas", "Courier New", monospace;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.item-contado-remover:hover {
+    background: #7f1d1d;
+    color: #ffffff;
+}
+
+.contagem-total-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 14px;
+    padding: 14px 16px;
+
+    border: 2px solid #39ff14;
+    border-radius: 6px;
+
+    background: #052e16;
+}
+
+.contagem-total-box span {
+    color: #bbf7d0;
+    font-weight: 900;
+}
+
+.contagem-total-box strong {
+    color: #39ff14;
+    font-size: 1.8rem;
+}
+
+@media (max-width: 520px) {
+    .item-contado-registrado {
+        grid-template-columns:
+            minmax(0, 1fr) 70px;
+    }
+
+    .item-contado-remover {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
+
+/* === ACUMULADOR DE ITENS LIMPO FIM === */

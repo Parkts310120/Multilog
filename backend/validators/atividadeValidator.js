@@ -7,8 +7,19 @@ function validarAtividade(dados){
   if(!dados.area) erros.push("Área é obrigatória");
   if(!dados.lote) erros.push("Lote é obrigatório");
 
-  if(Number(dados.quantidade_realizada || 0) <= 0){
-    erros.push("Quantidade realizada deve ser maior que zero");
+  const quantidadeRealizada =
+    Number(dados.quantidade_realizada);
+
+  if(
+    dados.quantidade_realizada === undefined ||
+    dados.quantidade_realizada === null ||
+    dados.quantidade_realizada === "" ||
+    !Number.isFinite(quantidadeRealizada) ||
+    quantidadeRealizada < 0
+  ){
+    erros.push(
+      "Quantidade realizada não pode ser negativa"
+    );
   }
 
   if(!dados.inicio) erros.push("Data/hora de início é obrigatória");

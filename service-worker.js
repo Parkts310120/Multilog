@@ -1,4 +1,4 @@
-const CACHE_NAME = "multilog-cache-v4";
+const CACHE_NAME = "multilog-cache-v8";
 
 const ARQUIVOS_CACHE = [
   "/",

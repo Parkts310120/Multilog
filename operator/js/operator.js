@@ -37,22 +37,54 @@ function salvarSessaoAtivaLocal(){
         return;
     }
 
+    const modoContagem =
+        document.getElementById(
+            'modo-contagem'
+        )?.value || 'total';
+
     const quantidadeRealizada =
         document.getElementById(
             'quantidade-realizada'
-        )?.value || '';
+        )?.value ?? '';
+
+    const quantidadeItemAtual =
+        document.getElementById(
+            'quantidade-item-atual'
+        )?.value ?? '';
 
     const observacao =
         document.getElementById(
             'observacao'
         )?.value || '';
 
+    currentSession.modoContagem =
+        modoContagem;
+
+    currentSession.itensContados =
+        typeof coletarRascunhoItensContados ===
+        'function'
+            ? coletarRascunhoItensContados()
+            : (
+                Array.isArray(
+                    currentSession.itensContados
+                )
+                    ? currentSession.itensContados
+                    : []
+            );
+
+    currentSession.quantidadeItemAtual =
+        quantidadeItemAtual;
+
     const dadosPersistidos = {
-        versao: 1,
+        versao: 3,
         operador: usuarioLogado.usuario,
         sessao: currentSession,
         rascunho: {
+            modoContagem,
             quantidadeRealizada,
+            quantidadeItemAtual,
+            itensContados:
+                currentSession.itensContados,
             observacao
         },
         salvoEm: new Date().toISOString()
@@ -120,6 +152,8 @@ function preencherCampoRestaurado(
 function configurarPersistenciaSessaoAtiva(){
     const camposRascunho = [
         'quantidade-realizada',
+        'modo-contagem',
+        'quantidade-item-atual',
         'observacao'
     ];
 
@@ -134,14 +168,28 @@ function configurarPersistenciaSessaoAtiva(){
             return;
         }
 
+        const salvar = () => {
+            if(
+                id === 'modo-contagem' &&
+                typeof alternarModoContagem ===
+                'function'
+            ){
+                alternarModoContagem({
+                    salvar: false
+                });
+            }
+
+            salvarSessaoAtivaLocal();
+        };
+
         campo.addEventListener(
             'input',
-            salvarSessaoAtivaLocal
+            salvar
         );
 
         campo.addEventListener(
             'change',
-            salvarSessaoAtivaLocal
+            salvar
         );
 
         campo.dataset.persistenciaConfigurada =
@@ -395,6 +443,10 @@ function restaurarSessaoAtivaLocal(){
             : 'Atividade em andamento restaurada.'
     );
 
+    restaurarContagemPorItensDaSessao(
+        dados.rascunho || {}
+    );
+
     return true;
 }
 
@@ -643,6 +695,14 @@ async function initAppLogic(){
     document.getElementById('btn-pause').innerText='PAUSAR';
 
     alternarQuantidadeEsperada();
+
+    if(!currentSession){
+        resetarContagemRealizada({
+            salvar:false
+        });
+    }
+
+    configurarAtalhosContagem();
 
     clearInterval(timerInterval);
     updateStatusUI(false);
@@ -1026,6 +1086,588 @@ function togglePauseTracking(){
     Toast.success('Atividade retomada.');
 }
 
+
+// === CONTAGEM POR ITENS INICIO ===
+
+let itensContadosEstado = [];
+
+function coletarRascunhoItensContados(){
+    return itensContadosEstado.map(
+        (item, indice) => ({
+            item: `Item ${indice + 1}`,
+            quantidade:
+                Number(item.quantidade)
+        })
+    );
+}
+
+function calcularTotalItensContados(){
+    return itensContadosEstado.reduce(
+        (total, item) =>
+            total +
+            Number(item.quantidade),
+        0
+    );
+}
+
+function atualizarSessaoContagem(){
+    if(!currentSession){
+        return;
+    }
+
+    currentSession.modoContagem =
+        document.getElementById(
+            'modo-contagem'
+        )?.value || 'total';
+
+    currentSession.itensContados =
+        coletarRascunhoItensContados();
+
+    currentSession.quantidadeItemAtual =
+        document.getElementById(
+            'quantidade-item-atual'
+        )?.value ?? '';
+}
+
+function atualizarTotalItensContados({
+    salvar = true
+} = {}){
+    const total =
+        calcularTotalItensContados();
+
+    const totalEl =
+        document.getElementById(
+            'total-itens-contados'
+        );
+
+    const quantidadeRealizada =
+        document.getElementById(
+            'quantidade-realizada'
+        );
+
+    if(totalEl){
+        totalEl.innerText =
+            String(total);
+    }
+
+    /*
+     * O restante do sistema continua usando
+     * quantidade-realizada. No modo por itens,
+     * esse campo recebe a soma automaticamente
+     * e fica escondido do operador.
+     */
+    if(quantidadeRealizada){
+        quantidadeRealizada.value =
+            String(total);
+    }
+
+    atualizarSessaoContagem();
+
+    if(
+        salvar &&
+        currentSession
+    ){
+        salvarSessaoAtivaLocal();
+    }
+
+    return total;
+}
+
+function renderizarItensContados(
+    itens = []
+){
+    const lista =
+        document.getElementById(
+            'lista-itens-contados'
+        );
+
+    if(!lista){
+        return;
+    }
+
+    itensContadosEstado =
+        Array.isArray(itens)
+            ? itens
+                .map(item => ({
+                    quantidade:
+                        Number(item.quantidade)
+                }))
+                .filter(item =>
+                    Number.isFinite(
+                        item.quantidade
+                    ) &&
+                    item.quantidade >= 0
+                )
+            : [];
+
+    lista.innerHTML = '';
+
+    itensContadosEstado.forEach(
+        (item, indice) => {
+            const linha =
+                document.createElement('div');
+
+            linha.className =
+                'item-contado-registrado';
+
+            const nome =
+                document.createElement('span');
+
+            nome.className =
+                'item-contado-registrado-nome';
+
+            nome.innerText =
+                `ITEM ${indice + 1}`;
+
+            const quantidade =
+                document.createElement('strong');
+
+            quantidade.className =
+                'item-contado-registrado-quantidade';
+
+            quantidade.innerText =
+                String(item.quantidade);
+
+            const remover =
+                document.createElement('button');
+
+            remover.type = 'button';
+            remover.className =
+                'item-contado-remover';
+            remover.innerText =
+                'REMOVER';
+
+            remover.addEventListener(
+                'click',
+                () => {
+                    removerItemContado(indice);
+                }
+            );
+
+            linha.appendChild(nome);
+            linha.appendChild(quantidade);
+            linha.appendChild(remover);
+
+            lista.appendChild(linha);
+        }
+    );
+
+    atualizarTotalItensContados({
+        salvar: false
+    });
+}
+
+function adicionarItemContado(){
+    const campo =
+        document.getElementById(
+            'quantidade-item-atual'
+        );
+
+    if(!campo){
+        Toast.error(
+            'Campo de quantidade do item não encontrado.'
+        );
+        return;
+    }
+
+    const texto =
+        String(campo.value).trim();
+
+    /*
+     * Vazio é inválido.
+     * Zero é válido.
+     */
+    if(texto === ''){
+        Toast.warning(
+            'Informe a quantidade deste item.'
+        );
+
+        campo.focus();
+        return;
+    }
+
+    const quantidade =
+        Number(texto);
+
+    if(
+        !Number.isFinite(quantidade) ||
+        quantidade < 0
+    ){
+        Toast.warning(
+            'A quantidade não pode ser negativa.'
+        );
+
+        campo.focus();
+        return;
+    }
+
+    itensContadosEstado.push({
+        quantidade
+    });
+
+    /*
+     * Renderiza a nova linha, recalcula o total
+     * e grava a soma no campo interno.
+     */
+    renderizarItensContados(
+        itensContadosEstado
+    );
+
+    campo.value = '';
+    campo.focus();
+
+    atualizarSessaoContagem();
+    salvarSessaoAtivaLocal();
+}
+
+function removerItemContado(indice){
+    itensContadosEstado.splice(
+        indice,
+        1
+    );
+
+    renderizarItensContados(
+        itensContadosEstado
+    );
+
+    salvarSessaoAtivaLocal();
+}
+
+function alternarModoContagem({
+    salvar = true
+} = {}){
+    const modo =
+        document.getElementById(
+            'modo-contagem'
+        )?.value || 'total';
+
+    const totalContainer =
+        document.getElementById(
+            'contagem-total-container'
+        );
+
+    const itensContainer =
+        document.getElementById(
+            'contagem-itens-container'
+        );
+
+    const quantidadeRealizada =
+        document.getElementById(
+            'quantidade-realizada'
+        );
+
+    if(totalContainer){
+        totalContainer.style.display =
+            modo === 'total'
+                ? 'block'
+                : 'none';
+    }
+
+    if(itensContainer){
+        itensContainer.style.display =
+            modo === 'itens'
+                ? 'block'
+                : 'none';
+    }
+
+    if(quantidadeRealizada){
+        quantidadeRealizada.disabled =
+            modo === 'itens';
+    }
+
+    if(modo === 'itens'){
+        atualizarTotalItensContados({
+            salvar: false
+        });
+
+        setTimeout(() => {
+            document.getElementById(
+                'quantidade-item-atual'
+            )?.focus();
+        }, 30);
+    }
+
+    atualizarSessaoContagem();
+
+    if(
+        salvar &&
+        currentSession
+    ){
+        salvarSessaoAtivaLocal();
+    }
+}
+
+function obterDadosContagem({
+    validar = false
+} = {}){
+    const modoContagem =
+        document.getElementById(
+            'modo-contagem'
+        )?.value || 'total';
+
+    if(modoContagem === 'total'){
+        const campo =
+            document.getElementById(
+                'quantidade-realizada'
+            );
+
+        const texto =
+            String(
+                campo?.value ?? ''
+            ).trim();
+
+        if(
+            validar &&
+            texto === ''
+        ){
+            return {
+                valido: false,
+                mensagem:
+                    'Informe a quantidade realizada.',
+                modoContagem,
+                quantidadeRealizada: 0,
+                itensContados: []
+            };
+        }
+
+        const quantidadeRealizada =
+            Number(texto);
+
+        if(
+            validar &&
+            (
+                !Number.isFinite(
+                    quantidadeRealizada
+                ) ||
+                quantidadeRealizada < 0
+            )
+        ){
+            return {
+                valido: false,
+                mensagem:
+                    'A quantidade não pode ser negativa.',
+                modoContagem,
+                quantidadeRealizada: 0,
+                itensContados: []
+            };
+        }
+
+        return {
+            valido:
+                texto !== '' &&
+                Number.isFinite(
+                    quantidadeRealizada
+                ) &&
+                quantidadeRealizada >= 0,
+            mensagem: '',
+            modoContagem,
+            quantidadeRealizada,
+            itensContados: []
+        };
+    }
+
+    const campoItem =
+        document.getElementById(
+            'quantidade-item-atual'
+        );
+
+    const textoItem =
+        String(
+            campoItem?.value ?? ''
+        ).trim();
+
+    if(
+        validar &&
+        textoItem !== ''
+    ){
+        return {
+            valido: false,
+            mensagem:
+                'Clique em "+ ADICIONAR ITEM" antes de finalizar.',
+            modoContagem,
+            quantidadeRealizada:
+                calcularTotalItensContados(),
+            itensContados:
+                coletarRascunhoItensContados()
+        };
+    }
+
+    const itensContados =
+        coletarRascunhoItensContados();
+
+    if(
+        validar &&
+        itensContados.length === 0
+    ){
+        return {
+            valido: false,
+            mensagem:
+                'Adicione pelo menos um item.',
+            modoContagem,
+            quantidadeRealizada: 0,
+            itensContados: []
+        };
+    }
+
+    return {
+        valido:
+            itensContados.length > 0,
+        mensagem: '',
+        modoContagem,
+        quantidadeRealizada:
+            calcularTotalItensContados(),
+        itensContados
+    };
+}
+
+function restaurarContagemPorItensDaSessao(
+    rascunho = {}
+){
+    if(!currentSession){
+        return;
+    }
+
+    currentSession.modoContagem =
+        currentSession.modoContagem ||
+        rascunho.modoContagem ||
+        'total';
+
+    currentSession.itensContados =
+        Array.isArray(
+            currentSession.itensContados
+        )
+            ? currentSession.itensContados
+            : (
+                Array.isArray(
+                    rascunho.itensContados
+                )
+                    ? rascunho.itensContados
+                    : []
+            );
+
+    currentSession.quantidadeItemAtual =
+        currentSession.quantidadeItemAtual ??
+        rascunho.quantidadeItemAtual ??
+        '';
+
+    const modoEl =
+        document.getElementById(
+            'modo-contagem'
+        );
+
+    const quantidadeItem =
+        document.getElementById(
+            'quantidade-item-atual'
+        );
+
+    if(modoEl){
+        modoEl.value =
+            currentSession.modoContagem;
+    }
+
+    renderizarItensContados(
+        currentSession.itensContados
+    );
+
+    if(quantidadeItem){
+        quantidadeItem.value =
+            currentSession.quantidadeItemAtual;
+    }
+
+    alternarModoContagem({
+        salvar: false
+    });
+}
+
+function resetarContagemRealizada({
+    salvar = false,
+    manterModo = false
+} = {}){
+    const modo =
+        document.getElementById(
+            'modo-contagem'
+        );
+
+    const quantidadeRealizada =
+        document.getElementById(
+            'quantidade-realizada'
+        );
+
+    const quantidadeItem =
+        document.getElementById(
+            'quantidade-item-atual'
+        );
+
+    if(
+        modo &&
+        !manterModo
+    ){
+        modo.value = 'total';
+    }
+
+    if(quantidadeRealizada){
+        quantidadeRealizada.value = '';
+        quantidadeRealizada.disabled =
+            false;
+    }
+
+    if(quantidadeItem){
+        quantidadeItem.value = '';
+    }
+
+    itensContadosEstado = [];
+
+    renderizarItensContados([]);
+
+    if(currentSession){
+        currentSession.modoContagem =
+            modo?.value || 'total';
+
+        currentSession.itensContados =
+            [];
+
+        currentSession.quantidadeItemAtual =
+            '';
+    }
+
+    alternarModoContagem({
+        salvar
+    });
+}
+
+function configurarAtalhosContagem(){
+    const quantidadeItem =
+        document.getElementById(
+            'quantidade-item-atual'
+        );
+
+    if(
+        quantidadeItem &&
+        !quantidadeItem.dataset
+            .atalhoAdicionar
+    ){
+        quantidadeItem.addEventListener(
+            'keydown',
+            evento => {
+                if(evento.key === 'Enter'){
+                    evento.preventDefault();
+                    adicionarItemContado();
+                }
+            }
+        );
+
+        quantidadeItem.dataset
+            .atalhoAdicionar = 'true';
+    }
+}
+
+document.addEventListener(
+    'DOMContentLoaded',
+    configurarAtalhosContagem
+);
+
+// === CONTAGEM POR ITENS FIM ===
+
 function alternarQuantidadeEsperada(){
     const temQuantidadeEsperada=document.getElementById('tem-quantidade-esperada').value;
     const grupoQuantidadeEsperada=document.getElementById('grupo-quantidade-esperada');
@@ -1079,8 +1721,13 @@ function startTracking(){
         isPaused:false,
         pauseStartedAt:null,
         totalPausedMs:0,
-        pausas:[]
+        pausas:[],
+        modoContagem:'total',
+        itensContados:[],
+        quantidadeItemAtual:''
     };
+
+    resetarContagemRealizada({ salvar:false });
 
     salvarSessaoAtivaLocal(); // salvar sessao apos iniciar
 
@@ -1094,6 +1741,9 @@ function startTracking(){
 
     document.getElementById('grupo-quantidade-realizada').style.display='block';
     document.getElementById('grupo-observacao').style.display='block';
+
+    alternarModoContagem({ salvar:false });
+    configurarAtalhosContagem();
 
     document.getElementById('quantidade-realizada').disabled=false;
     document.getElementById('observacao').disabled=false;
@@ -1162,15 +1812,14 @@ function solicitarFinalizacaoTracking(){
         return;
     }
 
-    const quantidadeRealizada=Number(
-        document
-            .getElementById('quantidade-realizada')
-            .value || 0
-    );
+    const contagem =
+        obterDadosContagem({
+            validar: true
+        });
 
-    if(quantidadeRealizada<=0){
+    if(!contagem.valido){
         Toast.warning(
-            'Informe a quantidade realizada antes de finalizar.'
+            contagem.mensagem
         );
         return;
     }
@@ -1223,20 +1872,40 @@ async function confirmarFinalizacaoTracking(){
 }
 
 async function stopTracking(){
-    if(!currentSession)return;
+    if(!currentSession){
+        return;
+    }
 
-    const quantidadeRealizada=Number(document.getElementById('quantidade-realizada').value||0);
-    const observacao=document.getElementById('observacao').value.trim();
+    const contagem =
+        obterDadosContagem({
+            validar: true
+        });
+
+    if(!contagem.valido){
+        Toast.warning(
+            contagem.mensagem
+        );
+        return;
+    }
+
+    const {
+        quantidadeRealizada,
+        itensContados,
+        modoContagem
+    } = contagem;
+
+    const observacao =
+        document
+            .getElementById(
+                'observacao'
+            )
+            .value
+            .trim();
 
     let diferencaQuantidade=null;
 
     if(currentSession.temQuantidadeEsperada==='sim'){
         diferencaQuantidade=quantidadeRealizada-currentSession.quantidadeEsperada;
-    }
-
-    if(quantidadeRealizada<=0){
-        Toast.warning('Informe a quantidade realizada antes de finalizar.');
-        return;
     }
 
     const endTime=new Date();
@@ -1307,6 +1976,7 @@ async function stopTracking(){
         duracao_segundos:diffSegundos,
         tempo_total_segundos:tempoTotalSegundos,
         tempo_pausado_segundos:tempoPausadoSegundos,
+        itens_contados:itensContados,
         pausas
     };
 
@@ -1322,6 +1992,10 @@ async function stopTracking(){
     }
 
     let mensagemFinal=`✅ Contagem concluída!\n\n⏱️ Tempo produtivo: ${durationText}\n⏸️ Tempo pausado: ${pauseDurationText}\n✅ Realizado: ${quantidadeRealizada}`;
+
+    if(modoContagem==='itens'){
+        mensagemFinal+=`\n📋 Itens lançados: ${itensContados.length}`;
+    }
 
     if(currentSession.temQuantidadeEsperada==='sim'){
         mensagemFinal+=`\n📦 Esperado: ${currentSession.quantidadeEsperada}`;
@@ -1353,6 +2027,8 @@ async function stopTracking(){
 
     document.getElementById('btn-start').disabled=false;
     document.getElementById('btn-end').disabled=true;
+    document.getElementById('btn-pause').disabled=true;
+    document.getElementById('btn-pause').innerText='PAUSAR';
 
     document.getElementById('grupo-quantidade-realizada').style.display='none';
     document.getElementById('grupo-observacao').style.display='none';
@@ -1361,6 +2037,7 @@ async function stopTracking(){
     document.getElementById('tem-quantidade-esperada').value='sim';
     document.getElementById('quantidade-esperada').value='';
     document.getElementById('quantidade-realizada').value='';
+    resetarContagemRealizada({ salvar:false });
     document.getElementById('observacao').value='';
     document.getElementById('unidade').value='peça';
 

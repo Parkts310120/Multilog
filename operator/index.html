@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="../css/buttons.css">
 <link rel="stylesheet" href="../css/cards.css">
 <link rel="stylesheet" href="../css/inputs.css">
-<link rel="stylesheet" href="../css/operator.css">
+<link rel="stylesheet" href="../css/operator.css?v=contagem-20260805-2">
 
 <meta name="theme-color" content="#020617">
 </head>
@@ -121,12 +121,89 @@
         <label class="operator-label" for="unidade">Unidade</label>
         <input class="operator-input" type="text" id="unidade" value="peça" placeholder="PEÇA / CAIXA / PALLET">
 
+
+
+
         <div id="grupo-quantidade-realizada" style="display:none;">
-            <label class="operator-label" for="quantidade-realizada">Quantidade realizada</label>
-            <input class="operator-input" type="number" id="quantidade-realizada" min="0" step="1" placeholder="REALIZADA">
+            <label
+                class="operator-label"
+                for="modo-contagem"
+            >
+                Forma de contagem
+            </label>
+
+            <select
+                class="operator-input"
+                id="modo-contagem"
+                onchange="alternarModoContagem()"
+            >
+                <option value="total">
+                    Informar total final
+                </option>
+
+                <option value="itens">
+                    Somar item por item
+                </option>
+            </select>
+
+            <div id="contagem-total-container">
+                <label
+                    class="operator-label"
+                    for="quantidade-realizada"
+                >
+                    Quantidade realizada
+                </label>
+
+                <input
+                    class="operator-input"
+                    type="number"
+                    id="quantidade-realizada" min="0"
+                    step="1"
+                    placeholder="REALIZADA"
+                >
+            </div>
+
+            <div
+                id="contagem-itens-container"
+                style="display:none;"
+            >
+                <label
+                    class="operator-label"
+                    for="quantidade-item-atual"
+                >
+                    Quantidade do item
+                </label>
+
+                <input
+                    class="operator-input"
+                    type="number"
+                    id="quantidade-item-atual" min="0"
+                    step="1"
+                    placeholder="EX.: 10"
+                >
+
+                <button
+                    class="operator-btn operator-btn-secondary"
+                    id="btn-adicionar-item"
+                    type="button"
+                    onclick="adicionarItemContado()"
+                >
+                    + ADICIONAR AO TOTAL
+                </button>
+
+                <div id="lista-itens-contados"></div>
+
+                <div class="contagem-total-box">
+                    <span>TOTAL CONTADO</span>
+
+                    <strong id="total-itens-contados">
+                        0
+                    </strong>
+                </div>
+            </div>
         </div>
 
-        <div id="grupo-observacao" style="display:none;">
+<div id="grupo-observacao" style="display:none;">
             <label class="operator-label" for="observacao">Observação</label>
             <textarea class="operator-input" id="observacao" rows="3" placeholder="DIVERGÊNCIA / AVARIA / FALTA"></textarea>
         </div>
@@ -295,12 +372,19 @@
 <script src="../js/loading.js"></script>
 <script src="js/operator-ui.js"></script>
 <script src="js/operator-wizard.js"></script>
-<script src="js/operator.js"></script>
+<script src="js/operator.js?v=contagem-20260805-2"></script>
 
 
 <!-- SERVICE WORKER REGISTRO INICIO -->
 <script>
-if("serviceWorker" in navigator){
+const AMBIENTE_LOCAL_SW =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+
+if(
+    "serviceWorker" in navigator &&
+    !AMBIENTE_LOCAL_SW
+){
     window.addEventListener("load", async () => {
         try{
             const registro =

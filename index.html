@@ -73,7 +73,14 @@ body{
 
 <!-- SERVICE WORKER REGISTRO INICIO -->
 <script>
-if("serviceWorker" in navigator){
+const AMBIENTE_LOCAL_SW =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+
+if(
+    "serviceWorker" in navigator &&
+    !AMBIENTE_LOCAL_SW
+){
     window.addEventListener("load", async () => {
         try{
             const registro =

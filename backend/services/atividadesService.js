@@ -32,6 +32,10 @@ async function salvarAtividade(dados){
       pausas: Array.isArray(dados.pausas)
         ? dados.pausas
         : [],
+      itens_contados:
+        Array.isArray(dados.itens_contados)
+          ? dados.itens_contados
+          : [],
       visivel: true
     });
 
